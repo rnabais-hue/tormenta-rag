@@ -30,7 +30,7 @@ Drive, para performance e para não sincronizar GBs).
 - [x] PDF do livro em `livro\` (exemplar próprio, uso pessoal).
 - [x] Dependências instaladas (ver §6).
 - [x] **Ingestão pronta** (`ingestao.py`) → índice gerado em `index\`
-      (**1165 chunks** brutos da ingestão via TOC; hoje **~1746 chunks** após
+      (**1165 chunks** brutos da ingestão via TOC; hoje **~1779 chunks** após
       integrar as famílias estruturadas — ver §11 —, embeddings bge-m3, FAISS).
 - [x] **Consulta pronta** (`perguntar.py`) → busca + Qwen3-8B via Ollama, com
       citação de fonte (seção/página).
@@ -84,6 +84,11 @@ Drive, para performance e para não sincronizar GBs).
       escola/círculo/tipo; substitui 135 chunks de texto corrido por 219 finos) e com **filtro
       híbrido** por círculo/escola/tipo, inclusive combinados (`detectar_filtro_magia`). Doc
       completa em [`docs/familias/magia.md`](docs/familias/magia.md).
+- [x] **Conhecimento estruturado — condições (Apêndice)**: 35 condições + 1 regra geral em
+      `dados/condicoes.json` (nome, tipo de efeito, escalonamento, efeito), **integradas ao índice**
+      (1 chunk/condição + lista por tipo; −4 texto corrido, +37 finos) e com **filtro híbrido** por
+      tipo de efeito/escalonamento (`detectar_filtro_condicao`). Resolve "condição fatigado" (§10).
+      Doc em [`docs/familias/condicoes.md`](docs/familias/condicoes.md).
 
 **Fluxo de uso hoje:** clicar no atalho **"RAG Tormenta20"** → navegador abre em
 `http://127.0.0.1:8000` → perguntar → marcar **OK/Problema**. Tudo fica em `logs\`.
@@ -217,6 +222,9 @@ C:\LLM-Local\tormenta\
 ├─ extrair_magias.py         extração ESTRUTURADA das 198 magias + 5 regras (Cap. 4) → dados/magias.json (docs/familias/magia.md)
 ├─ gerar_magias_html.py      gera a ferramenta de conferência das magias (dados/magias.html)
 ├─ integrar_magias.py        substitui os 135 chunks de texto corrido do Cap. 4 por 219 finos (1/magia + listas)
+├─ extrair_condicoes.py      extração ESTRUTURADA das 35 condições + regra (Apêndice) → dados/condicoes.json (docs/familias/condicoes.md)
+├─ gerar_condicoes_html.py   gera a ferramenta de conferência das condições (dados/condicoes.html)
+├─ integrar_condicoes.py     substitui os 4 chunks de texto corrido do Apêndice por 37 finos (1/condição + lista + regra)
 ├─ interface.py              servidor web local (stdlib) com streaming e avaliação
 ├─ testar_lote.py            suíte: roda várias perguntas, carrega modelo 1x
 ├─ iniciar_interface.bat     trata Ollama + sobe a interface
@@ -388,8 +396,9 @@ reembutir o resto; idempotente). Subseções abaixo detalham cada uma.
 | Atributos + criação | 6 (+2 procedurais) | direto/inverso (`detectar_filtro_atributo`) |
 | Equipamentos (Capítulo 3) | 219 (+20 listas) | armas, armaduras, esotéricos, venenos, materiais (`detectar_filtro_equipamento`) |
 | Magia (Capítulo 4) | 198 (+5 regras) | círculo / escola / tipo, combinados (`detectar_filtro_magia`) — doc em `docs/familias/magia.md` |
+| Condições (Apêndice) | 35 (+1 regra) | tipo de efeito / escalonamento (`detectar_filtro_condicao`) — doc em `docs/familias/condicoes.md` |
 
-Índice atual: **~1746 chunks** (1165 brutos + estruturados − textos corridos
+Índice atual: **~1779 chunks** (1165 brutos + estruturados − textos corridos
 substituídos). ⚠️ Cuidado com a **ordem de re-run** dos integradores (ver a nota nos
 Poderes de classe).
 

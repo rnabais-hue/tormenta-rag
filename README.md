@@ -30,7 +30,7 @@ Drive, para performance e para não sincronizar GBs).
 - [x] PDF do livro em `livro\` (exemplar próprio, uso pessoal).
 - [x] Dependências instaladas (ver §6).
 - [x] **Ingestão pronta** (`ingestao.py`) → índice gerado em `index\`
-      (**1165 chunks** brutos da ingestão via TOC; hoje **~1779 chunks** após
+      (**1165 chunks** brutos da ingestão via TOC; hoje **~1734 chunks** após
       integrar as famílias estruturadas — ver §11 —, embeddings bge-m3, FAISS).
 - [x] **Consulta pronta** (`perguntar.py`) → busca + Qwen3-8B via Ollama, com
       citação de fonte (seção/página).
@@ -95,6 +95,12 @@ Drive, para performance e para não sincronizar GBs).
       4 listas por faixa de ND + 3 regras; substitui os 96 chunks de texto corrido do Cap. 7) e com
       **filtro híbrido** por ND, faixa de ND e grupo ecológico (`detectar_filtro_ameaca`). Doc em
       [`docs/familias/ameacas.md`](docs/familias/ameacas.md).
+- [x] **Conhecimento estruturado — regras de jogo / combate & parceiros (Capítulos 5 e 6)**: manobras,
+      ações, táticas, ferimentos/descanso e o sistema de parceiros em `dados/regras_jogo.json`
+      (7 manobras + 10 parceiros × 3 tiers + regras de combate/descanso), **integradas ao índice**
+      (48 chunks estruturados; substitui os 93 chunks de texto corrido do Cap. 5) e com **filtro
+      híbrido** por manobra/ação/tática/ferimento/parceiro (`detectar_filtro_regra_jogo`). Doc em
+      [`docs/familias/jogando.md`](docs/familias/jogando.md).
 
 **Fluxo de uso hoje:** clicar no atalho **"RAG Tormenta20"** → navegador abre em
 `http://127.0.0.1:8000` → perguntar → marcar **OK/Problema**. Tudo fica em `logs\`.
@@ -404,8 +410,9 @@ reembutir o resto; idempotente). Subseções abaixo detalham cada uma.
 | Magia (Capítulo 4) | 198 (+5 regras) | círculo / escola / tipo, combinados (`detectar_filtro_magia`) — doc em `docs/familias/magia.md` |
 | Condições (Apêndice) | 35 (+1 regra) | tipo de efeito / escalonamento (`detectar_filtro_condicao`) — doc em `docs/familias/condicoes.md` |
 | Ameaças / Bestiário (Capítulo 7) | 80 (+13 listas, +3 regras) | ND / faixa de ND / grupo (`detectar_filtro_ameaca`) — doc em `docs/familias/ameacas.md` |
+| Regras de Jogo / Combate & Parceiros (Cap. 5 e 6) | 48 (7 manobras, 10 parceiros, +regras) | manobra / ação / tática / ferimento / parceiro (`detectar_filtro_regra_jogo`) — doc em `docs/familias/jogando.md` |
 
-Índice atual: **~1779 chunks** (1165 brutos + estruturados − textos corridos
+Índice atual: **~1734 chunks** (1165 brutos + estruturados − textos corridos
 substituídos). ⚠️ Cuidado com a **ordem de re-run** dos integradores (ver a nota nos
 Poderes de classe).
 

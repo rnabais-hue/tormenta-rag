@@ -1,0 +1,31 @@
+# ===========================================================================
+# DADOS PROTEGIDOS POR DIREITOS AUTORAIS — NUNCA versionar/distribuir.
+# O repositório versiona só a FERRAMENTA (código). Cada usuário gera os dados
+# do seu próprio exemplar do livro rodando a pipeline (ingestao + integradores).
+# ===========================================================================
+
+# PDF do livro (fonte, protegido)
+livro/
+
+# índice FAISS + chunks.jsonl (contêm texto do livro verbatim)
+index/
+
+# JSON/HTML estruturados (contêm texto do livro)
+dados/
+
+# consultas/avaliações (podem conter trechos)
+logs/
+
+# ===========================================================================
+# Pesos/cache de modelos e artefatos de runtime
+# ===========================================================================
+models/
+__pycache__/
+*.pyc
+*.pyo
+
+# ===========================================================================
+# Temporários
+# ===========================================================================
+_*.txt
+*.tmp

@@ -643,7 +643,9 @@ def buscar(query, index, chunks, model, k=TOP_K):
         if hits:
             return hits
 
-    q = model.encode([query], normalize_embeddings=True).astype("float32")
+    q = model.encode(
+        [query], normalize_embeddings=True, show_progress_bar=False
+    ).astype("float32")
 
     filtro = detectar_filtro(query)
     if filtro:

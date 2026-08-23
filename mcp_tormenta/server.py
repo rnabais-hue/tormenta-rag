@@ -6,7 +6,9 @@ Expõe a RECUPERAÇÃO (busca no índice FAISS + embedder bge-m3) como ferrament
 MCP, para que clientes como Claude Code, Codex CLI ou Antigravity façam a
 GERAÇÃO da resposta com um modelo mais forte, mantendo a busca 100% local.
 
-O índice e o embedder são carregados UMA vez no startup e mantidos em memória.
+O índice e o embedder são carregados UMA vez na primeira chamada e mantidos
+em memória. O transporte MCP inicia imediatamente para não estourar o timeout
+de clientes enquanto o modelo pesado é carregado.
 
 Ferramentas expostas:
   - buscar_tormenta(pergunta, k=5)          -> top-k trechos recuperados
@@ -32,6 +34,8 @@ if str(RAIZ) not in sys.path:
 # O embedder bge-m3 já está em cache em C:\LLM-Local\models (carrega offline).
 # Garantimos HF_HOME caso o cliente MCP não o tenha propagado no ambiente.
 os.environ.setdefault("HF_HOME", r"C:\LLM-Local\models")
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
 # Reutiliza a recuperação local SEM modificar perguntar.py.
 from perguntar import (  # noqa: E402
@@ -148,9 +152,8 @@ def montar_contexto_tormenta(pergunta: str, k: int = 5) -> str:
 
 
 def main():
-    # Pré-carrega no startup para que a primeira chamada de ferramenta seja rápida
-    # e para falhar cedo caso o índice não exista.
-    _estado()
+    # Inicia o protocolo imediatamente. O carregamento pesado acontece de forma
+    # preguiçosa em _estado() na primeira chamada de ferramenta.
     mcp.run()  # transporte stdio (padrão do FastMCP)
 
 

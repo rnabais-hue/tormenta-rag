@@ -954,6 +954,9 @@ Efeito medido:
 ### Ameaças / Bestiário (Capítulo 7)
 - Documentação completa da família estruturada de Ameaças: consulte [docs/familias/ameacas.md](docs/familias/ameacas.md).
 
+### Regras de Jogo, Combate & Parceiros (Capítulo 5 & 6)
+- Documentação completa da família estruturada de Regras de Jogo e Parceiros: consulte [docs/familias/jogando.md](docs/familias/jogando.md).
+
 ### Condições (Apêndice)
 - Documentação completa da família estruturada de Condições: consulte [docs/familias/condicoes.md](docs/familias/condicoes.md).
 

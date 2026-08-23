@@ -629,6 +629,75 @@ def _satisfaz_ameaca(chunk, campo, valor):
     return False
 
 
+# ---- filtro híbrido de REGRAS DE JOGO (Manobras, Ações, Descanso, Parceiros) --
+def detectar_filtro_regra_jogo(query, chunks):
+    """Detecta perguntas sobre regras procedurais do Cap. 5 e Parceiros."""
+    ql = _sem_acento(query)
+
+    # 1. Manobras de Combate
+    if re.search(r"\b(todas\s+as\s+manobras|quais\s+sao\s+as\s+manobras|lista\s+de\s+manobras|manobras\s+de\s+combate)\b", ql):
+        return ("categoria_regra", "manobras_todas", "todas as manobras de combate")
+    
+    m_man = re.search(r"\b(manobra\s+)?(agarrar|atropelar|derrubar|desarmar|empurrar|fintar|quebrar)\b", ql)
+    if m_man and re.search(r"\b(manobra|como\s+funciona|regras?|teste)\b", ql):
+        nome_m = m_man.group(2).capitalize()
+        return ("manobra_especifica", nome_m, f"manobra de combate {nome_m}")
+
+    # 2. Tipos de Ações
+    if re.search(r"\b(quais\s+sao\s+as\s+acoes|tipos\s+de\s+acoes|economia\s+de\s+acoes|acoes\s+de\s+combate)\b", ql):
+        return ("categoria_regra", "combate_geral", "ações de combate e rodada")
+    if re.search(r"\b(acoes?\s+padrao|acao\s+padrao)\b", ql):
+        return ("nome_regra", "Ações de Combate: Ação Padrão", "ação padrão")
+    if re.search(r"\b(acoes?\s+de\s+movimento|acao\s+de\s+movimento)\b", ql):
+        return ("nome_regra", "Ações de Combate: Ação de Movimento", "ação de movimento")
+    if re.search(r"\b(acoes?\s+completas?|acao\s+completa)\b", ql):
+        return ("nome_regra", "Ações de Combate: Ação Completa", "ação completa")
+    if re.search(r"\b(acoes?\s+livres?|reacoes?)\b", ql) and re.search(r"\b(combate|como\s+funciona|quais)\b", ql):
+        return ("nome_regra", "Ações de Combate: Ações Livres e Reações", "ações livres e reações")
+
+    # 3. Modificadores Táticos
+    if re.search(r"\b(flanquear|flanqueamento|flanqueando)\b", ql):
+        return ("nome_regra", "Modificador Tático: Flanquear", "modificador tático de flanquear")
+    if re.search(r"\b(cobertura\s+leve|cobertura\s+total|regras?\s+de\s+cobertura)\b", ql):
+        return ("nome_regra", "Modificador Tático: Cobertura", "regras de cobertura")
+    if re.search(r"\b(camuflagem\s+leve|camuflagem\s+total|regras?\s+de\s+camuflagem)\b", ql):
+        return ("nome_regra", "Modificador Tático: Camuflagem", "regras de camuflagem")
+
+    # 4. Ferimentos e Descanso
+    if re.search(r"\b(descanso|recuperacao\s+de\s+pv|recuperar\s+pv|descanso\s+luxuoso|descanso\s+confortavel|dormir|repouso)\b", ql):
+        return ("categoria_regra", "descanso", "regras de descanso e recuperação de PV/PM")
+    if re.search(r"\b(0\s*pv|zero\s+pv|sangrando|estabilizacao|morrer|morte\s+do\s+personagem)\b", ql):
+        return ("categoria_regra", "ferimento", "ferimentos, sangramento e morte")
+
+    # 5. Parceiros / Aliados
+    if re.search(r"\b(tipos\s+de\s+parceiros|quais\s+sao\s+os\s+parceiros|regras\s+de\s+parceiros|quantos\s+parceiros|sistema\s+de\s+parceiros)\b", ql):
+        return ("tipo", "parceiro_regra", "regras do sistema de parceiros")
+    
+    m_parc = re.search(r"\bparceiro\s+(ajudante|atirador|combatente|conjurador|curandeiro|destruidor|fortao|guardiao|perseguidor|vigilante)\b", ql)
+    if m_parc:
+        p_nome = m_parc.group(1).capitalize()
+        if p_nome == "Fortao": p_nome = "Fortão"
+        if p_nome == "Guardiao": p_nome = "Guardião"
+        return ("nome_parceiro", p_nome, f"parceiro {p_nome}")
+
+    return None
+
+
+def _satisfaz_regra_jogo(chunk, campo, valor):
+    tp = chunk.get("tipo", "")
+    if campo == "manobra_especifica":
+        return tp == "regra_jogo" and chunk.get("categoria_regra") == "manobra" and chunk.get("nome_regra") == valor
+    if campo == "categoria_regra":
+        return chunk.get("categoria_regra") == valor or tp == "regra_jogo_lista"
+    if campo == "nome_regra":
+        return chunk.get("titulo") == valor or chunk.get("nome_regra") == valor
+    if campo == "nome_parceiro":
+        return tp == "parceiro" and chunk.get("nome_parceiro") == valor
+    if campo == "tipo":
+        return tp == valor
+    return False
+
+
 def buscar(query, index, chunks, model, k=TOP_K):
     """Embeda a pergunta e retorna os k chunks mais similares (com score).
 
@@ -793,6 +862,22 @@ def buscar(query, index, chunks, model, k=TOP_K):
                 hits.append(c)
             return hits[:20]
 
+    filtro_rj = detectar_filtro_regra_jogo(query, chunks)
+    if filtro_rj:
+        campo, valor, rotulo = filtro_rj
+        idxs = [i for i, c in enumerate(chunks)
+                if _satisfaz_regra_jogo(c, campo, valor)]
+        if idxs:
+            vecs = np.array([index.reconstruct(int(i)) for i in idxs], dtype="float32")
+            sims = vecs @ q[0]
+            hits = []
+            for j in np.argsort(-sims):
+                c = dict(chunks[idxs[int(j)]])
+                c["score"] = float(sims[int(j)])
+                c["match_filtro"] = rotulo
+                hits.append(c)
+            return hits[:20]
+
     scores, ids = index.search(q, k)
     hits = []
     for score, i in zip(scores[0], ids[0]):
@@ -917,6 +1002,7 @@ def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True
     filtro_m = detectar_filtro_magia(query, chunks)
     filtro_c = detectar_filtro_condicao(query, chunks)
     filtro_am = detectar_filtro_ameaca(query, chunks)
+    filtro_rj = detectar_filtro_regra_jogo(query, chunks)
     intent_poder = detectar_intent_poder(query)
     registro = {
         "ts": datetime.now().isoformat(timespec="seconds"),
@@ -943,6 +1029,8 @@ def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True
                             if filtro_c else None),
         "filtro_ameaca": ({"campo": filtro_am[0], "valor": filtro_am[1]}
                           if filtro_am else None),
+        "filtro_regra_jogo": ({"campo": filtro_rj[0], "valor": filtro_rj[1]}
+                             if filtro_rj else None),
         "filtro_poder": ({"tipo": intent_poder[0], "rotulo": intent_poder[2]}
                          if intent_poder else None),
         "resposta": resposta,

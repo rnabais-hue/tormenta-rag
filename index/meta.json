@@ -1,0 +1,23 @@
+{
+  "modelo_embed": "BAAI/bge-m3",
+  "dim": 1024,
+  "n_chunks": 1779,
+  "n_secoes": 288,
+  "pdf": "Tormenta20-Edicao-Jogo-do-Ano-12-06-2024.pdf",
+  "max_chars": 2000,
+  "overlap": 200,
+  "racas_estruturadas": 17,
+  "atualizado_em": "20260823-140937",
+  "classes_estruturadas": 14,
+  "poderes_classe_estruturados": 296,
+  "poderes_gerais_estruturados": 162,
+  "pericias_estruturadas": 29,
+  "origens_estruturadas": 35,
+  "deuses_estruturados": 20,
+  "atributos_estruturados": 6,
+  "equipamentos_estruturados": 239,
+  "magias_estruturadas": 198,
+  "condicoes_estruturadas": 35,
+  "ultima_atualizacao": "2026-08-23T17:17:45",
+  "ameacas_estruturadas": 80
+}

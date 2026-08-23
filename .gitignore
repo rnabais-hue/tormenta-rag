@@ -4,13 +4,19 @@
 # do seu próprio exemplar do livro rodando a pipeline (ingestao + integradores).
 # ===========================================================================
 
-# PDF do livro (fonte, protegido)
+# PDF do livro (fonte, protegido) — NUNCA versionar
 livro/
 
-# índice FAISS + chunks.jsonl (contêm texto do livro verbatim)
-index/
+# Índice: em repo PRIVADO distribuímos o RAG PRONTO. Versionamos só os 3
+# arquivos essenciais que o MCP/consulta leem (contêm texto do livro verbatim
+# → repo tem de ser privado e só entre quem JÁ possui o livro). Backups e
+# qualquer outro artefato de index/ ficam de fora.
+index/*
+!index/tormenta.faiss
+!index/chunks.jsonl
+!index/meta.json
 
-# JSON/HTML estruturados (contêm texto do livro)
+# JSON/HTML estruturados (texto do livro) — não necessários para consumir
 dados/
 
 # consultas/avaliações (podem conter trechos)

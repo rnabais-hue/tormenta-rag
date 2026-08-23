@@ -8,6 +8,16 @@ quantizado**. Tudo roda **offline, na CPU, fora do Google Drive**.
 > código e é autossuficiente: uma pessoa (ou outra IA) deve conseguir entender e
 > continuar o projeto lendo só este arquivo + os scripts. Se você alterar o
 > comportamento, **atualize este README junto**.
+>
+> **Documentação modular (`docs/`):** para permitir trabalho paralelo sem conflito,
+> componentes/famílias novas são documentados em arquivos próprios em [`docs/`](docs/)
+> (ex.: [Magia](docs/familias/magia.md), [MCP](docs/mcp.md)); este README permanece o
+> índice. Regra: cada frente edita **só o seu** arquivo de doc.
+>
+> **Versionamento:** o repositório git versiona **apenas a ferramenta** (código). O
+> `.gitignore` exclui `livro/`, `index/`, `dados/`, `logs/`, `models/` — dados
+> derivados do livro (protegidos). Para compartilhar: distribua o código; cada
+> usuário gera o índice do **próprio exemplar**.
 
 Contexto da máquina: Windows 11, Intel Core Ultra 7 258V, GPU Intel Arc **sem
 CUDA → tudo em CPU**. Projeto em `C:\LLM-Local\tormenta\` (disco local, fora do

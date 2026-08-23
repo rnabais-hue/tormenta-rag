@@ -89,6 +89,12 @@ Drive, para performance e para não sincronizar GBs).
       (1 chunk/condição + lista por tipo; −4 texto corrido, +37 finos) e com **filtro híbrido** por
       tipo de efeito/escalonamento (`detectar_filtro_condicao`). Resolve "condição fatigado" (§10).
       Doc em [`docs/familias/condicoes.md`](docs/familias/condicoes.md).
+- [x] **Conhecimento estruturado — ameaças / bestiário (Capítulo 7)**: 80 criaturas em
+      `dados/ameacas.json` (stat block completo: ND, defesa/PV/PM, ataques, habilidades, atributos,
+      perícias, tesouro), **integradas ao índice** (96 chunks: 80 criaturas + 9 listas por grupo +
+      4 listas por faixa de ND + 3 regras; substitui os 96 chunks de texto corrido do Cap. 7) e com
+      **filtro híbrido** por ND, faixa de ND e grupo ecológico (`detectar_filtro_ameaca`). Doc em
+      [`docs/familias/ameacas.md`](docs/familias/ameacas.md).
 
 **Fluxo de uso hoje:** clicar no atalho **"RAG Tormenta20"** → navegador abre em
 `http://127.0.0.1:8000` → perguntar → marcar **OK/Problema**. Tudo fica em `logs\`.
@@ -397,6 +403,7 @@ reembutir o resto; idempotente). Subseções abaixo detalham cada uma.
 | Equipamentos (Capítulo 3) | 219 (+20 listas) | armas, armaduras, esotéricos, venenos, materiais (`detectar_filtro_equipamento`) |
 | Magia (Capítulo 4) | 198 (+5 regras) | círculo / escola / tipo, combinados (`detectar_filtro_magia`) — doc em `docs/familias/magia.md` |
 | Condições (Apêndice) | 35 (+1 regra) | tipo de efeito / escalonamento (`detectar_filtro_condicao`) — doc em `docs/familias/condicoes.md` |
+| Ameaças / Bestiário (Capítulo 7) | 80 (+13 listas, +3 regras) | ND / faixa de ND / grupo (`detectar_filtro_ameaca`) — doc em `docs/familias/ameacas.md` |
 
 Índice atual: **~1779 chunks** (1165 brutos + estruturados − textos corridos
 substituídos). ⚠️ Cuidado com a **ordem de re-run** dos integradores (ver a nota nos

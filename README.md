@@ -944,6 +944,9 @@ Efeito medido:
 ### Magia (Capítulo 4)
 - Documentação completa da família estruturada de Magia: consulte [docs/familias/magia.md](docs/familias/magia.md).
 
+### Ameaças / Bestiário (Capítulo 7)
+- Documentação completa da família estruturada de Ameaças: consulte [docs/familias/ameacas.md](docs/familias/ameacas.md).
+
 ### Condições (Apêndice)
 - Documentação completa da família estruturada de Condições: consulte [docs/familias/condicoes.md](docs/familias/condicoes.md).
 

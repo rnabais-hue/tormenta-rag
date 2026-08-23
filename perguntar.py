@@ -551,6 +551,84 @@ def _satisfaz_condicao(chunk, campo, valor):
     return False
 
 
+# ---- filtro híbrido de AMEAÇAS (ND, grupo, faixa de ND) ---------------------
+def detectar_filtro_ameaca(query, chunks):
+    """Detecta perguntas de listagem de ameaças e criaturas:
+    - 'monstros de ND 5' / 'criaturas com ND 1/2'
+    - 'ameaças da Tormenta' / 'criaturas de masmorras' / 'tropas puristas'
+    - 'monstros iniciantes' / 'ameaças lendárias'
+    Retorna (campo, valor, rotulo) ou None.
+    """
+    ql = _sem_acento(query)
+
+    # Evita interceptar perguntas de detalhamento de um monstro individual (ex: "qual o PV do dragão adulto")
+    if re.search(r"\b(qual\s+o\s+pv|qual\s+a\s+defesa|o\s+que\s+faz\s+o|como\s+funciona\s+o\s+ataque)\b", ql):
+        return None
+
+    # 1. Filtro por ND
+    m_nd = re.search(r"\bnd\s*(\d+(?:/\d+)?|s\+?)\b|\bnivel\s+de\s+desafio\s*(\d+(?:/\d+)?)\b", ql)
+    if m_nd:
+        nd_val = m_nd.group(1) or m_nd.group(2)
+        return ("nd", nd_val, f"criaturas de ND {nd_val}")
+
+    # 2. Filtro por Faixa de ND
+    if re.search(r"\b(monstros|criaturas|ameacas)\s+(iniciantes?|baixo\s+nd)\b", ql):
+        return ("faixa_nd", "Iniciante (ND 1/4 a ND 1)", "criaturas iniciantes (ND 1/4 a 1)")
+    if re.search(r"\b(monstros|criaturas|ameacas)\s+(veteranos?|medio\s+nd)\b", ql):
+        return ("faixa_nd", "Veterano (ND 2 a ND 4)", "criaturas veteranas (ND 2 a 4)")
+    if re.search(r"\b(monstros|criaturas|ameacas)\s+(campe(oes|ao)|alto\s+nd)\b", ql):
+        return ("faixa_nd", "Campeão (ND 5 a ND 9)", "criaturas campeãs (ND 5 a 9)")
+    if re.search(r"\b(monstros|criaturas|ameacas)\s+(lendari(os|as)|epicos?)\b", ql):
+        return ("faixa_nd", "Lendário (ND 10 a ND 20)", "criaturas lendárias (ND 10 a 20)")
+
+    # 3. Filtro por Grupo
+    grupos_map = {
+        "masmorra": "Masmorras",
+        "masmorras": "Masmorras",
+        "ermos": "Ermos",
+        "purista": "Puristas",
+        "puristas": "Puristas",
+        "reino dos mortos": "Reino dos Mortos",
+        "mortos-vivos": "Reino dos Mortos",
+        "mortos vivos": "Reino dos Mortos",
+        "duyshidakk": "Duyshidakk",
+        "alianca negra": "Duyshidakk",
+        "sszzaas": "Sszzaazitas",
+        "sszzaazitas": "Sszzaazitas",
+        "finntroll": "Trolls nobres",
+        "trolls nobres": "Trolls nobres",
+        "dragoes": "Dragões",
+        "dragao": "Dragões",
+        "tormenta": "Tormenta",
+        "lefeu": "Tormenta",
+    }
+    
+    if re.search(r"\b(monstro|monstros|criatura|criaturas|ameaca|ameacas|inimigo|inimigos|bestiario|lista|quais)\b", ql):
+        for k, v in grupos_map.items():
+            if re.search(r"\b" + k + r"\b", ql):
+                return ("grupo", v, f"ameaças do grupo {v}")
+
+    return None
+
+
+def _satisfaz_ameaca(chunk, campo, valor):
+    tipo = chunk.get("tipo", "")
+    if tipo == "ameaca":
+        if campo == "nd" and str(chunk.get("nd")) == str(valor):
+            return True
+        if campo == "grupo" and chunk.get("grupo") == valor:
+            return True
+        if campo == "tipo_criatura" and chunk.get("tipo_criatura") == valor:
+            return True
+    elif tipo == "ameaca_lista":
+        cat = chunk.get("categoria_filtro")
+        if cat == "grupo" and campo == "grupo" and chunk.get("grupo") == valor:
+            return True
+        if cat == "nd" and campo == "faixa_nd" and chunk.get("faixa_nd") == valor:
+            return True
+    return False
+
+
 def buscar(query, index, chunks, model, k=TOP_K):
     """Embeda a pergunta e retorna os k chunks mais similares (com score).
 
@@ -697,6 +775,22 @@ def buscar(query, index, chunks, model, k=TOP_K):
                 hits.append(c)
             return hits[:20]
 
+    filtro_am = detectar_filtro_ameaca(query, chunks)
+    if filtro_am:
+        campo, valor, rotulo = filtro_am
+        idxs = [i for i, c in enumerate(chunks)
+                if _satisfaz_ameaca(c, campo, valor)]
+        if idxs:
+            vecs = np.array([index.reconstruct(int(i)) for i in idxs], dtype="float32")
+            sims = vecs @ q[0]
+            hits = []
+            for j in np.argsort(-sims):
+                c = dict(chunks[idxs[int(j)]])
+                c["score"] = float(sims[int(j)])
+                c["match_filtro"] = rotulo
+                hits.append(c)
+            return hits[:20]
+
     scores, ids = index.search(q, k)
     hits = []
     for score, i in zip(scores[0], ids[0]):
@@ -820,6 +914,7 @@ def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True
     filtro_eq = detectar_filtro_equipamento(query, chunks)
     filtro_m = detectar_filtro_magia(query, chunks)
     filtro_c = detectar_filtro_condicao(query, chunks)
+    filtro_am = detectar_filtro_ameaca(query, chunks)
     intent_poder = detectar_intent_poder(query)
     registro = {
         "ts": datetime.now().isoformat(timespec="seconds"),
@@ -844,6 +939,8 @@ def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True
                          if filtro_m else None),
         "filtro_condicao": ({"campo": filtro_c[0], "valor": filtro_c[1]}
                             if filtro_c else None),
+        "filtro_ameaca": ({"campo": filtro_am[0], "valor": filtro_am[1]}
+                          if filtro_am else None),
         "filtro_poder": ({"tipo": intent_poder[0], "rotulo": intent_poder[2]}
                          if intent_poder else None),
         "resposta": resposta,

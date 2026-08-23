@@ -935,6 +935,9 @@ Efeito medido:
 ### Magia (Capítulo 4)
 - Documentação completa da família estruturada de Magia: consulte [docs/familias/magia.md](docs/familias/magia.md).
 
+### Condições (Apêndice)
+- Documentação completa da família estruturada de Condições: consulte [docs/familias/condicoes.md](docs/familias/condicoes.md).
+
 ---
 
 ## 12. Para continuar este projeto (IA ou pessoa)

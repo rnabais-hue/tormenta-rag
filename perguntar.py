@@ -495,6 +495,62 @@ def _satisfaz_magia(chunk, crit):
     return False
 
 
+# ---- filtro híbrido de CONDIÇÕES (tipo de efeito, escalamento, todas) --------
+def detectar_filtro_condicao(query, chunks):
+    """Detecta perguntas de listagem de condições:
+    - 'quais são as condições de movimento' / 'condições mentais'
+    - 'quais condições escalam' / 'condições que pioram'
+    - 'quais são as condições do jogo' / 'lista de condições'
+    Retorna (campo, valor, rotulo) ou None.
+    """
+    ql = _sem_acento(query)
+    
+    # Exige menção a condição / condições / estados
+    if not re.search(r"\bcondic(ao|oes)\b|\bestados?\s+(prejudicia(is|l)|de\s+jogo)\b", ql):
+        return None
+        
+    # Evita interceptar perguntas de detalhamento de uma condição individual (ex: "o que faz a condição fatigado")
+    if re.search(r"\bo\s+que\s+(faz|e)\s+a\s+condic\b|\bcomo\s+funciona\s+a\s+condic\b|\be\s+estar\s+\w+\b", ql):
+        return None
+        
+    # 1. Condições que escalam
+    if re.search(r"\bescala(m|ndo)?\b|\bpiora(m|ndo)?\b|\bacumula(m)?\b", ql):
+        return ("escalamento", True, "condições que escalam")
+        
+    # 2. Por Tipo de Efeito
+    tipos_map = {
+        "mental": "Mental",
+        "mentais": "Mental",
+        "movimento": "Movimento",
+        "sentidos": "Sentidos",
+        "metabolismo": "Metabolismo",
+        "cansaco": "Cansaço",
+        "medo": "Medo",
+        "veneno": "Veneno",
+        "metamorfose": "Metamorfose",
+    }
+    for k, v in tipos_map.items():
+        if re.search(r"\b" + k + r"\b", ql):
+            return ("tipo_efeito", v, f"condições do tipo {v}")
+            
+    # 3. Lista geral / todas as condições
+    if re.search(r"\b(quais|todas|lista)\b", ql):
+        return ("todas", True, "todas as condições")
+        
+    return None
+
+
+def _satisfaz_condicao(chunk, campo, valor):
+    tipo = chunk.get("tipo", "")
+    if campo == "tipo_efeito":
+        return tipo == "condicao" and chunk.get("tipo_efeito") == valor
+    if campo == "escalamento":
+        return tipo == "condicao" and bool(chunk.get("piora_para"))
+    if campo == "todas":
+        return tipo in ["condicao", "condicao_lista", "condicao_regra"]
+    return False
+
+
 def buscar(query, index, chunks, model, k=TOP_K):
     """Embeda a pergunta e retorna os k chunks mais similares (com score).
 
@@ -614,6 +670,22 @@ def buscar(query, index, chunks, model, k=TOP_K):
         crit, rotulo = filtro_m
         idxs = [i for i, c in enumerate(chunks)
                 if _satisfaz_magia(c, crit)]
+        if idxs:
+            vecs = np.array([index.reconstruct(int(i)) for i in idxs], dtype="float32")
+            sims = vecs @ q[0]
+            hits = []
+            for j in np.argsort(-sims):
+                c = dict(chunks[idxs[int(j)]])
+                c["score"] = float(sims[int(j)])
+                c["match_filtro"] = rotulo
+                hits.append(c)
+            return hits[:20]
+
+    filtro_cond = detectar_filtro_condicao(query, chunks)
+    if filtro_cond:
+        campo, valor, rotulo = filtro_cond
+        idxs = [i for i, c in enumerate(chunks)
+                if _satisfaz_condicao(c, campo, valor)]
         if idxs:
             vecs = np.array([index.reconstruct(int(i)) for i in idxs], dtype="float32")
             sims = vecs @ q[0]
@@ -747,6 +819,7 @@ def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True
     filtro_a = detectar_filtro_atributo(query, chunks)
     filtro_eq = detectar_filtro_equipamento(query, chunks)
     filtro_m = detectar_filtro_magia(query, chunks)
+    filtro_c = detectar_filtro_condicao(query, chunks)
     intent_poder = detectar_intent_poder(query)
     registro = {
         "ts": datetime.now().isoformat(timespec="seconds"),
@@ -769,6 +842,8 @@ def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True
                               if filtro_eq else None),
         "filtro_magia": ({"criterios": filtro_m[0], "rotulo": filtro_m[1]}
                          if filtro_m else None),
+        "filtro_condicao": ({"campo": filtro_c[0], "valor": filtro_c[1]}
+                            if filtro_c else None),
         "filtro_poder": ({"tipo": intent_poder[0], "rotulo": intent_poder[2]}
                          if intent_poder else None),
         "resposta": resposta,

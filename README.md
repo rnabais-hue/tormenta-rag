@@ -920,6 +920,9 @@ Efeito medido:
 - "quais são os materiais especiais e o que o Aço-Rubi faz?" → Aço-Rubi no **rank 1** (Score 0.602) e Lista de Materiais no **rank 2**.
 - "quais são as armas de fogo?" → Filtro híbrido ativa e retorna Pistola, Mosquete e Lista de Armas de Fogo.
 
+### Magia (Capítulo 4)
+- Documentação completa da família estruturada de Magia: consulte [docs/familias/magia.md](docs/familias/magia.md).
+
 ---
 
 ## 12. Para continuar este projeto (IA ou pessoa)

@@ -412,6 +412,89 @@ def _satisfaz_equipamento(chunk, campo, valor):
     return False
 
 
+# ---- filtro híbrido de MAGIA (círculo, escola, tipo arcana/divina) -----------
+def detectar_filtro_magia(query, chunks):
+    """Detecta perguntas de listagem de magias por círculo, escola e/ou tipo:
+    - 'magias arcanas de 1º círculo' / 'magias de 2º círculo de evocação'
+    - 'magias da escola de abjuração' / 'quais as magias de 3º círculo'
+    Retorna (criterios_dict, rotulo) ou None.
+    """
+    ql = _sem_acento(query)
+    
+    # Exige sinal explícito de magia/feitiço
+    if not re.search(r"\bmagias?\b|\bfeitic(o|os)\b", ql):
+        return None
+        
+    # Não intercepta perguntas de detalhamento de uma magia individual
+    if re.search(r"\bo\s+que\s+(faz|e)\s+a\s+magia\b|\bcomo\s+funciona\s+a\s+magia\b|\bduracao\s+da\s+magia\b|\bdano\s+da\s+magia\b", ql):
+        return None
+        
+    crit = {}
+    
+    # 1. Círculo (1º a 5º)
+    m_circ = re.search(r"\b([1-5])\s*º?\s*(circulo|grau)\b|\b(primeiro|segundo|terceiro|quarto|quinto)\s+circulo\b", ql)
+    if m_circ:
+        if m_circ.group(1):
+            crit["circulo"] = int(m_circ.group(1))
+        else:
+            mapa_ord = {"primeiro": 1, "segundo": 2, "terceiro": 3, "quarto": 4, "quinto": 5}
+            crit["circulo"] = mapa_ord.get(m_circ.group(3), 1)
+            
+    # 2. Escola (8 escolas)
+    escolas_map = {
+        "abjuracao": "Abjuração", "adivinhacao": "Adivinhação", "convocacao": "Convocação",
+        "encantamento": "Encantamento", "evocacao": "Evocação", "ilusao": "Ilusão",
+        "necromancia": "Necromancia", "transmutacao": "Transmutação"
+    }
+    for esc_k, esc_nome in escolas_map.items():
+        if re.search(r"\b" + esc_k + r"\b", ql):
+            crit["escola"] = esc_nome
+            break
+            
+    # 3. Tipo (arcana, divina, universal)
+    if re.search(r"\barcanas?\b", ql):
+        crit["tipo"] = "arcana"
+    elif re.search(r"\bdivinas?\b", ql):
+        crit["tipo"] = "divina"
+    elif re.search(r"\buniversa(is|l)\b", ql):
+        crit["tipo"] = "universal"
+        
+    if not crit:
+        return None
+        
+    partes = []
+    if "circulo" in crit:
+        partes.append(f"{crit['circulo']}º círculo")
+    if "tipo" in crit:
+        partes.append(f"{crit['tipo']}")
+    if "escola" in crit:
+        partes.append(f"escola {crit['escola']}")
+        
+    rotulo = "magias " + " ".join(partes)
+    return (crit, rotulo)
+
+
+def _satisfaz_magia(chunk, crit):
+    tipo = chunk.get("tipo", "")
+    if tipo == "magia":
+        if "circulo" in crit and chunk.get("circulo") != crit["circulo"]:
+            return False
+        if "escola" in crit and chunk.get("escola") != crit["escola"]:
+            return False
+        if "tipo" in crit and chunk.get("magia_tipo") != crit["tipo"] and chunk.get("magia_tipo") != "universal":
+            return False
+        return True
+    elif tipo == "magia_lista":
+        cat = chunk.get("categoria_filtro")
+        if cat == "circulo" and "circulo" in crit and chunk.get("circulo") == crit["circulo"]:
+            return True
+        if cat == "escola" and "escola" in crit and chunk.get("escola") == crit["escola"]:
+            return True
+        if cat == "tipo" and "tipo" in crit and chunk.get("magia_tipo") == crit["tipo"]:
+            return True
+    return False
+
+
 def buscar(query, index, chunks, model, k=TOP_K):
     """Embeda a pergunta e retorna os k chunks mais similares (com score).
 
@@ -525,6 +608,22 @@ def buscar(query, index, chunks, model, k=TOP_K):
                 c["match_filtro"] = rotulo
                 hits.append(c)
             return hits[:15]
+
+    filtro_m = detectar_filtro_magia(query, chunks)
+    if filtro_m:
+        crit, rotulo = filtro_m
+        idxs = [i for i, c in enumerate(chunks)
+                if _satisfaz_magia(c, crit)]
+        if idxs:
+            vecs = np.array([index.reconstruct(int(i)) for i in idxs], dtype="float32")
+            sims = vecs @ q[0]
+            hits = []
+            for j in np.argsort(-sims):
+                c = dict(chunks[idxs[int(j)]])
+                c["score"] = float(sims[int(j)])
+                c["match_filtro"] = rotulo
+                hits.append(c)
+            return hits[:20]
 
     scores, ids = index.search(q, k)
     hits = []
@@ -647,6 +746,7 @@ def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True
     filtro_d = detectar_filtro_deus(query, chunks)
     filtro_a = detectar_filtro_atributo(query, chunks)
     filtro_eq = detectar_filtro_equipamento(query, chunks)
+    filtro_m = detectar_filtro_magia(query, chunks)
     intent_poder = detectar_intent_poder(query)
     registro = {
         "ts": datetime.now().isoformat(timespec="seconds"),
@@ -667,6 +767,8 @@ def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True
                             if filtro_a else None),
         "filtro_equipamento": ({"campo": filtro_eq[0], "valor": filtro_eq[1]}
                               if filtro_eq else None),
+        "filtro_magia": ({"criterios": filtro_m[0], "rotulo": filtro_m[1]}
+                         if filtro_m else None),
         "filtro_poder": ({"tipo": intent_poder[0], "rotulo": intent_poder[2]}
                          if intent_poder else None),
         "resposta": resposta,

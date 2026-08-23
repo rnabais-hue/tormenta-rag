@@ -30,7 +30,7 @@ Drive, para performance e para não sincronizar GBs).
 - [x] PDF do livro em `livro\` (exemplar próprio, uso pessoal).
 - [x] Dependências instaladas (ver §6).
 - [x] **Ingestão pronta** (`ingestao.py`) → índice gerado em `index\`
-      (**1165 chunks** brutos da ingestão via TOC; hoje **~1662 chunks** após
+      (**1165 chunks** brutos da ingestão via TOC; hoje **~1746 chunks** após
       integrar as famílias estruturadas — ver §11 —, embeddings bge-m3, FAISS).
 - [x] **Consulta pronta** (`perguntar.py`) → busca + Qwen3-8B via Ollama, com
       citação de fonte (seção/página).
@@ -79,6 +79,11 @@ Drive, para performance e para não sincronizar GBs).
       4 regras procedurais e 20 listas agregadas em `dados/equipamentos.json`,
       **integrados ao índice** (substitui os 64 chunks grossos por 239 chunks finos específicos;
       rank 1 nas consultas de itens e filtros híbridos de categoria). Ver §11.
+- [x] **Conhecimento estruturado — magia (Capítulo 4 completo)**: 198 magias + 5 regras
+      procedurais em `dados/magias.json`, **integradas ao índice** (1 chunk/magia + listas por
+      escola/círculo/tipo; substitui 135 chunks de texto corrido por 219 finos) e com **filtro
+      híbrido** por círculo/escola/tipo, inclusive combinados (`detectar_filtro_magia`). Doc
+      completa em [`docs/familias/magia.md`](docs/familias/magia.md).
 
 **Fluxo de uso hoje:** clicar no atalho **"RAG Tormenta20"** → navegador abre em
 `http://127.0.0.1:8000` → perguntar → marcar **OK/Problema**. Tudo fica em `logs\`.
@@ -209,10 +214,16 @@ C:\LLM-Local\tormenta\
 ├─ elegibilidade.py           Stage C: deriva campo `elegibilidade` (acesso/conjuração/devoção + flags) nos JSON de poder (§11)
 ├─ personagem.py             Stage D: motor que avalia B+C p/ um personagem — poderes disponíveis + árvore de pré-requisitos (§11)
 ├─ perguntar.py              núcleo da consulta (busca vetorial + filtro híbrido + motor de poderes B/C/D + Ollama) + CLI + logs
+├─ extrair_magias.py         extração ESTRUTURADA das 198 magias + 5 regras (Cap. 4) → dados/magias.json (docs/familias/magia.md)
+├─ gerar_magias_html.py      gera a ferramenta de conferência das magias (dados/magias.html)
+├─ integrar_magias.py        substitui os 135 chunks de texto corrido do Cap. 4 por 219 finos (1/magia + listas)
 ├─ interface.py              servidor web local (stdlib) com streaming e avaliação
 ├─ testar_lote.py            suíte: roda várias perguntas, carrega modelo 1x
 ├─ iniciar_interface.bat     trata Ollama + sobe a interface
-└─ README.md                 este documento (fonte-de-verdade)
+├─ mcp_tormenta/             servidor MCP (stdio) que expõe a recuperação a clientes (Claude Code/Codex/Antigravity) — docs/mcp.md
+├─ docs/                     documentação modular (familias/, mcp.md) — ver ponteiro no topo
+├─ .gitignore                versiona só a ferramenta; exclui livro/index/dados/logs/models (dados protegidos)
+└─ README.md                 este documento (fonte-de-verdade / índice)
 ```
 
 Atalho: `C:\Users\rnaba\OneDrive\Desktop\RAG Tormenta20.lnk` → o `.bat`.
@@ -376,8 +387,9 @@ reembutir o resto; idempotente). Subseções abaixo detalham cada uma.
 | Deuses | 20 | energia / devoto (`detectar_filtro_deus`) |
 | Atributos + criação | 6 (+2 procedurais) | direto/inverso (`detectar_filtro_atributo`) |
 | Equipamentos (Capítulo 3) | 219 (+20 listas) | armas, armaduras, esotéricos, venenos, materiais (`detectar_filtro_equipamento`) |
+| Magia (Capítulo 4) | 198 (+5 regras) | círculo / escola / tipo, combinados (`detectar_filtro_magia`) — doc em `docs/familias/magia.md` |
 
-Índice atual: **~1662 chunks** (1165 brutos + estruturados − textos corridos
+Índice atual: **~1746 chunks** (1165 brutos + estruturados − textos corridos
 substituídos). ⚠️ Cuidado com a **ordem de re-run** dos integradores (ver a nota nos
 Poderes de classe).
 

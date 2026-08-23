@@ -1,0 +1,8 @@
+# Dependência EXTRA do servidor MCP (o resto — faiss-cpu, sentence-transformers,
+# numpy, requests — já faz parte do lab RAG e não é repetido aqui).
+#
+# ATENÇÃO: instalar exige aprovação explícita do usuário (regra do projeto).
+#   python -m pip install mcp
+#
+# O SDK oficial de MCP para Python. FastMCP (mcp.server.fastmcp) vem incluso.
+mcp>=1.2.0

@@ -1,14 +1,14 @@
 # Família estruturada: Bestiário de *Ameaças de Arton* (livro de expansão)
 
-> **Status: EM CURSO (piloto validado no método).** Livro de expansão, `fonte="ameacas-arton"`.
-> Escopo desta família: **só as CRIATURAS** do bestiário (Cap. 1). As raças variantes
+> **Status: FASE 1 INTEGRADA (324 criaturas 100% completas no FAISS, 75 pendentes isoladas).** Livro de expansão, `fonte="ameacas-arton"`.
+> Escopo desta família: **as CRIATURAS** do bestiário (Cap. 1). As raças variantes
 > (espalhadas em caixas soltas) ficam **fora** por decisão de projeto.
 
 Primeira família do esforço **multi-livro**. Difere das do núcleo em dois pontos:
 1. Vem de um livro que **não passou pela `ingestao.py`** → a integração é **aditiva**
-   (não há texto corrido a substituir; só embute os chunks novos).
-2. Os ~28 grupos temáticos são a **mesma entidade** (criatura), **mesmo schema**,
-   **mesmo extrator** → a paralelização é **por lote de grupos**, não por arquivo (ver §6).
+   (não há texto corrido a substituir; embute os 357 chunks estruturados com `fonte="ameacas-arton"`).
+2. Os 29 grupos temáticos compartilham a **mesma entidade** (criatura), **mesmo schema** e
+   **mesmo extrator** linear com suporte a tabela larga e fusão contínua.
 
 ---
 
@@ -90,14 +90,21 @@ Gera `dados/ameacas_arton.json`. Conferência offline: `dados/ameacas_arton.html
 
 ---
 
-## 5. Estado do piloto (Dragões + Mortos-Vivos)
+## 5. Estado da FASE 1 (todos os grupos integrados)
 
-- **33 criaturas | ND 30/33 | atributos 24/33 | Def/PV/tipo/tamanho ~85%.**
-- **Resíduos conhecidos** (a resolver na conferência ou em nova passada de parser):
-  - Nome de **variante de dragão truncado ao sufixo** ("Bosque" em vez de "Dragão Filhote do
-    Bosque") — o prefixo está no título 27pt destacado, cuja geometria varia.
-  - **PV de colossal** que quebra entre colunas (ex.: Sckhar) captura só o 1º dígito.
-  - Vazamento ocasional de **cabeçalho de grupo** no nome.
+- **324 criaturas integradas no FAISS** (`fonte="ameacas-arton"`), + 29 chunks-lista por grupo
+  + 4 chunks-lista por faixa de ND = **357 chunks**. As **75 criaturas** que o parser não
+  fechou ficam isoladas em `dados/ameacas_arton_pendentes.json` (**fora** do índice).
+- **Qualidade** (via `diagnostico_ameacas.py`): **314/324 completas (96,9%)**; 10 sem
+  `habilidades` (stat block íntegro, só a lista de habilidades vazia).
+- **Resíduos conhecidos** (conferidos contra o PDF na validação de 2026-08-24):
+  - **Nomes:** 29 nomes malformados (cabeçalho de grupo vazado no nome, variante duplicada)
+    foram **corrigidos no JSON** cruzando com os spans-nome `Tormenta20` ≥13pt do PDF.
+  - **Merges pendentes (parser):** ~6 registros ainda fundem 2+ criaturas vizinhas num só
+    nome (ex.: pág. 63 Avatar de Aharadak + partes; pág. 203 família Glop; págs. 258/277/281).
+    Isso indica **criaturas faltando** como registro próprio → resolver em passada do parser,
+    não por renomear.
+  - **PV de colossal** que quebra entre colunas (ex.: Sckhar) pode capturar só o 1º dígito.
 
 ---
 

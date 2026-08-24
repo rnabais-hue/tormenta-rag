@@ -30,7 +30,7 @@ def problemas(c):
     if not c.get("pv"):
         p.append("sem PV")
     nome = c.get("nome", "")
-    if len(nome) < 4 or " " not in nome and len(nome) < 6:
+    if len(nome) < 3:
         p.append("nome?")
     if any(w in nome for w in ["Esqueleto Fantasma", "Fantasma Hidra"]):
         p.append("nome contaminado?")

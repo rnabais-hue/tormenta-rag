@@ -2,32 +2,23 @@
 r"""Extração ESTRUTURADA do BESTIÁRIO de *Ameaças de Arton* (v1.0) — só as CRIATURAS.
 
 Livro de expansão (fonte="ameacas-arton"). O Cap. 1 (págs 12–373) é o bestiário,
-em ~30 grupos temáticos. Escopo desta família: SÓ as fichas de criatura (as raças
-variantes, espalhadas em caixas soltas, ficam de fora por decisão de projeto).
+em ~29 grupos temáticos. Escopo: SÓ as fichas de criatura.
 
-Desafio de layout (diferente do núcleo): 2 colunas, várias variantes por página,
-texto-sombra decorativo, nomes quebrados/concatenados, blocos fora de ordem e
-marca-d'água. Estratégia:
-  1) Montar o texto de cada grupo SÓ com os spans que compõem o stat block —
-     `Tormenta20-Regular` (nome/ND) + `SourceSansPro-*` (ficha) — descartando
-     `IowanOldStyle*` (lore/caixas), `Helvetica` (marca-d'água) e SourceSansPro
-     tamanho <=8 (sombra decorativa).
-  2) Segmentar em criaturas pela ÂNCORA do stat block: `<Tipo> (<sub>)? <Tamanho>`,
-     capturando o NOME imediatamente antes e o ND próximo.
-  3) Extrair os campos por regex (mesmo formato do núcleo).
+Arquitetura:
+  1) Linearização do fluxo de leitura (coluna 1 -> coluna 2 -> próxima página).
+  2) Segmentação contínua por âncoras compostas (Nome + ND + Tipo/Tamanho).
+  3) Suporte integral a traços unicode (en-dash, em-dash, minus).
+  4) Extração de habilidades especiais (spans Bold/Italic) e ataques.
 
 Uso:
     python extrair_ameacas_arton.py            # grupos-piloto (validar)
     python extrair_ameacas_arton.py --todos    # todos os grupos de criatura
-
-Lê o PDF; escreve dados/ameacas_arton.json. NÃO toca no índice.
 """
 import io
 import json
 import re
 import sys
 from pathlib import Path
-
 import pymupdf
 
 import fontes  # registro de procedência
@@ -38,8 +29,7 @@ OUT = BASE / "dados" / "ameacas_arton.json"
 OUT.parent.mkdir(exist_ok=True)
 FONTE = "ameacas-arton"
 
-# Grupos temáticos do Cap. 1 (nome -> (pag_inicial, pag_final)). Derivado do TOC.
-# `cria=True` = grupo de criaturas; os demais (regras/perigos) ficam fora do escopo.
+# Grupos temáticos do Cap. 1 (págs 32–359)
 GRUPOS = [
     ("Brutos & Indomáveis", 32, 43, True),
     ("Capangas & Bandoleiros", 44, 53, True),
@@ -75,6 +65,8 @@ GRUPOS_PILOTO = {"Dragões", "Mortos-Vivos"}
 
 TIPOS = r"Monstro|Humanoide|Animal|Construto|Espírito|Morto-?[Vv]ivo|Aberração|Planta|Elemental|Fada|Verme|Dragão"
 TAMS = r"Minúsculo|Pequeno|Médio|Grande|Enorme|Colossal"
+DASHES = r"‐\-―−\u2010\u2011\u2012\u2013\u2014\u2015\u2212"
+ATTR_VAL = rf"([+{DASHES}]?\d+|[{DASHES}]+)"
 
 
 def slug(s):
@@ -85,216 +77,267 @@ def slug(s):
 
 
 def dehyph(s):
-    s = re.sub(r"(\w+)[-\xad­]\s+(\w+)", r"\1\2", s)
-    s = re.sub(r"[\xad­]", "", s)
+    if not s:
+        return ""
+    s = re.sub(rf"(\w+)[{DASHES}\xad\u00ad]\s+(\w+)", r"\1\2", s)
+    s = re.sub(r"[\xad\u00ad]", "", s)
     return re.sub(r"\s+", " ", s).strip()
 
 
-def _kept_spans(page):
-    """Spans da ficha (Tormenta20 nome/ND/tipo + SourceSansPro 9pt) com coordenadas.
-    Descarta marca-d'água, lore/caixas, sombra decorativa e nº de página."""
-    out = []
-    for b in page.get_text("dict")["blocks"]:
-        if "lines" not in b:
-            continue
-        for l in b["lines"]:
-            for s in l["spans"]:
-                fn, sz, tx = s["font"], s["size"], s["text"]
-                if not tx.strip():
-                    continue
-                if fn.startswith("Helvetica") or fn.startswith("IowanOldStyle"):
-                    continue
-                if fn.startswith("Tormenta20"):
-                    if sz <= 12.5:
-                        continue
-                    kind = "nome"
-                elif fn.startswith("SourceSansPro"):
-                    if sz <= 8.5 or sz >= 9.8:
-                        continue
-                    kind = "ficha"
-                else:
-                    continue
-                x0, y0, x1, y1 = s["bbox"]
-                out.append({"t": tx, "sz": sz, "x0": x0, "y0": y0, "x1": x1, "kind": kind})
-    return out
-
-
-def _reconstruir(spans):
-    """Texto de um conjunto de spans, reordenado por linha visual (faixa de y) e x."""
-    spans = sorted(spans, key=lambda s: (round(s["y0"] / 3.0), s["x0"]))
-    return dehyph(" ".join(s["t"] for s in spans))
-
-
-def _is_nome(s):
-    t = s["t"].strip()
-    return (s["kind"] == "nome" and s["sz"] >= 13.0
-            and re.search(r"[A-Za-zÀ-ÿ]", t) and not re.match(r"ND\b", t))
-
-
-def texto_statblock_do_grupo(doc, p0, p1):  # mantido para compat (não usado no fluxo novo)
-    return [(pno, _reconstruir(_kept_spans(doc[pno - 1]))) for pno in range(p0, p1 + 1)]
-
-
-def _dedup_palavras(nome):
-    """Remove repetição de palavras/frases (texto-sombra e título-destaque+variante):
-    'Fantasma Fantasma' -> 'Fantasma'; 'Dragão Adulto Dragão Adulto da tirania' ->
-    'Dragão Adulto da tirania'; 'A B A B' -> 'A B'."""
-    ws = [w for i, w in enumerate(nome.split()) if i == 0 or w != nome.split()[i - 1]]
-    # colapsa n-grama LÍDER repetido: se ws[:n]==ws[n:2n], descarta o primeiro
-    mudou = True
-    while mudou and len(ws) >= 2:
-        mudou = False
-        for n in range(len(ws) // 2, 0, -1):
-            if ws[:n] == ws[n:2 * n]:
-                ws = ws[n:]
-                mudou = True
-                break
-    # colapsa frase inteira duplicada: 'A B A B' -> 'A B'
-    n = len(ws)
-    if n % 2 == 0 and ws[: n // 2] == ws[n // 2:]:
-        ws = ws[: n // 2]
-    return " ".join(ws)
-
-
-def limpar_nome(bruto):
-    """Do texto imediatamente antes da âncora de tipo, isola o NOME da criatura:
-    as últimas palavras iniciando por maiúscula (com conectores de/do/da/e)."""
-    bruto = bruto.strip(" \t.,;:)(")
-    # corta caudas conhecidas da criatura anterior (tudo até o último marcador some)
+def limpar_nome(nome):
+    nome = nome.strip(" \t.,;:)(")
     for corte in [r".*Tesouro[^.]*\.", r".*para extrair\)\.?", r".*\(Continua[^)]*\)",
                   r".*Car\s*[+\-–]?\d+", r"^\d+\s+"]:
-        bruto = re.sub(corte, "", bruto).strip()
-    m = re.search(
-        r"([A-ZÀ-Ý][\wÀ-ÿçãõáéíóúâêôà\-]*(?:\s+(?:de|do|da|das|dos|e|[A-ZÀ-Ý][\wÀ-ÿçãõáéíóúâêôà\-]*))*)\s*$",
-        bruto,
-    )
-    nome = (m.group(1) if m else bruto).strip()
-    nome = re.sub(r"\s*ND\s*[\d/]+\s*$", "", nome).strip()   # ND colado
-    nome = re.sub(r"^\d+\s+", "", nome).strip()               # nº de página no início
-    return _dedup_palavras(nome)
+        nome = re.sub(corte, "", nome).strip()
+    nome = re.sub(r"\s*ND\s*[\d/S+]+\s*$", "", nome, flags=re.I).strip()
+    nome = re.sub(r"^\d+\s+", "", nome).strip()
+    ws = nome.split()
+    if not ws:
+        return ""
+    dedup = [ws[0]]
+    for w in ws[1:]:
+        if w.lower() != dedup[-1].lower():
+            dedup.append(w)
+    nome = " ".join(dedup)
+    n = len(dedup)
+    if n >= 2 and n % 2 == 0 and dedup[:n//2] == dedup[n//2:]:
+        nome = " ".join(dedup[:n//2])
+    return nome
 
 
-def campos(bloco):
-    """Extrai os campos do stat block de um SEGMENTO de texto (uma criatura)."""
+def has_separated_labels(c1, c2):
+    """Verifica se os rótulos de stat block em C1 estão sem valores em C1 e os valores estão em C2 na mesma linha."""
+    rotulos_sem_valor_em_c1 = 0
+    for i, s1 in enumerate(c1):
+        t1 = s1["t"].strip()
+        if t1 in ["Iniciativa", "Defesa", "Pontos de Vida"]:
+            tem_valor_em_c1 = False
+            for prox in c1[i+1:i+4]:
+                if abs(prox["y0"] - s1["y0"]) <= 4 and re.search(r"\d+", prox["t"]):
+                    tem_valor_em_c1 = True
+                    break
+            if not tem_valor_em_c1:
+                for s2 in c2:
+                    if abs(s2["y0"] - s1["y0"]) <= 6 and re.search(r"\d+", s2["t"]):
+                        rotulos_sem_valor_em_c1 += 1
+                        break
+    return rotulos_sem_valor_em_c1 >= 2
+
+
+def get_group_stream(doc, p0, p1):
+    """Lineariza todos os spans do grupo na ordem de leitura contínua com detecção de tabela larga."""
+    stream = []
+    for pno in range(p0, p1 + 1):
+        page = doc[pno - 1]
+        blocks = page.get_text("dict")["blocks"]
+        c1, c2 = [], []
+        for b in blocks:
+            if "lines" not in b:
+                continue
+            for l in b["lines"]:
+                for s in l["spans"]:
+                    fn, sz, tx = s["font"], s["size"], s["text"]
+                    if not tx.strip():
+                        continue
+                    if fn.startswith("Helvetica") or fn.startswith("IowanOldStyle"):
+                        continue
+                    if fn.startswith("Tormenta20") and sz <= 12.5:
+                        continue
+                    if fn.startswith("SourceSansPro") and (sz <= 8.5 or sz >= 9.8):
+                        continue
+                    x0, y0, x1, y1 = s["bbox"]
+                    kind = "nome" if fn.startswith("Tormenta20") else "ficha"
+                    item = {"t": tx, "sz": sz, "x0": x0, "y0": y0, "x1": x1, "y1": y1,
+                            "kind": kind, "font": fn, "pno": pno}
+                    if x0 < 300:
+                        c1.append(item)
+                    else:
+                        c2.append(item)
+        c1.sort(key=lambda s: (round(s["y0"] / 3.0), s["x0"]))
+        c2.sort(key=lambda s: (round(s["y0"] / 3.0), s["x0"]))
+
+        if has_separated_labels(c1, c2):
+            # Tabela Larga: intercalar C1 e C2 por Y horizontal
+            all_spans = sorted(c1 + c2, key=lambda s: (round(s["y0"] / 3.0), s["x0"]))
+            stream.extend(all_spans)
+        else:
+            stream.extend(c1)
+            stream.extend(c2)
+    return stream
+
+
+def extrair_habilidades(spans):
+    """Extrai habilidades especiais a partir de spans negritados e itálicos."""
+    habs = []
+    ignorar = {
+        "iniciativa", "percepção", "percepcao", "defesa", "fort", "fortitude",
+        "ref", "reflexos", "von", "vontade", "pontos de vida", "pv", "pontos de mana",
+        "pm", "deslocamento", "corpo a corpo", "à distância", "a distancia",
+        "atributos", "perícias", "pericias", "equipamento", "tesouro", "for", "des",
+        "con", "int", "sab", "car", "nd"
+    }
+    curr_nome = ""
+    curr_desc = []
+
+    for s in spans:
+        fn, tx = s["font"], s["t"].strip()
+        if not tx:
+            continue
+        is_bold_title = False
+        if "Bold" in fn and s["sz"] >= 8.8:
+            tx_clean = re.sub(r"[:\.\t]+$", "", tx).strip()
+            tx_lower = tx_clean.lower()
+            if not any(tx_lower.startswith(ign) for ign in ignorar) and not re.match(r"^For\s+[+\-–\d]", tx, re.I):
+                if len(tx_clean) >= 3 and not tx_clean.isdigit():
+                    is_bold_title = True
+        elif "It" in fn and any(k in tx for k in ["(Padrão", "(Movimento", "(Completa", "(Reação", "(Livre"]):
+            is_bold_title = True
+            tx_clean = tx
+
+        if is_bold_title:
+            if curr_nome and curr_desc:
+                desc_txt = dehyph(" ".join(curr_desc))
+                if len(desc_txt) > 3:
+                    habs.append({"nome": curr_nome, "descricao": desc_txt})
+            curr_nome = tx_clean
+            curr_desc = []
+        elif curr_nome:
+            if re.search(r"\bFor\s*[+\-–\d]", tx, re.I) or any(tx.lower().startswith(ign) for ign in ["perícias", "equipamento", "tesouro"]):
+                if curr_nome and curr_desc:
+                    desc_txt = dehyph(" ".join(curr_desc))
+                    if len(desc_txt) > 3:
+                        habs.append({"nome": curr_nome, "descricao": desc_txt})
+                curr_nome = ""
+                curr_desc = []
+            else:
+                curr_desc.append(tx)
+
+    if curr_nome and curr_desc:
+        desc_txt = dehyph(" ".join(curr_desc))
+        if len(desc_txt) > 3:
+            habs.append({"nome": curr_nome, "descricao": desc_txt})
+    return habs
+
+
+def campos_do_bloco(texto, spans):
+    """Extrai os campos estruturados de uma criatura."""
     def g(pat, grp=1, d=""):
-        m = re.search(pat, bloco, re.I)
+        m = re.search(pat, texto, re.I)
         return m.group(grp).strip() if m else d
 
     tipo = g(rf"({TIPOS})\s*(?:\([^)]+\))?\s*(?:{TAMS})", 1, "Monstro").capitalize()
-    m_sub = re.search(rf"(?:{TIPOS})\s*\(([^)]+)\)\s*(?:{TAMS})", bloco, re.I)
+    m_sub = re.search(rf"(?:{TIPOS})\s*\(([^)]+)\)\s*(?:{TAMS})", texto, re.I)
     subtipo = m_sub.group(1).strip() if m_sub else ""
     tamanho = g(rf"(?:{TIPOS})\s*(?:\([^)]+\))?\s*({TAMS})", 1, "Médio").capitalize()
     papel = g(rf"(?:{TAMS})\s*\((Solo|Lacaio|Bando)\)", 1, "Normal").capitalize()
 
     ini = g(r"Iniciativa\s*([+\-]?\d+)", 1, "+0")
-    m_per = re.search(r"Percepção\s*([+\-]?\d+)(?:,\s*([^\n]+?))?(?=Defesa|Fort)", bloco, re.I)
+    m_per = re.search(r"Percepção\s*([+\-]?\d+)(?:,\s*([^\n]+?))?(?=Defesa|Fort)", texto, re.I)
     perc = m_per.group(1) if m_per else "+0"
     sentidos = (m_per.group(2).strip().rstrip(",") if (m_per and m_per.group(2)) else "")
 
-    defesa = g(r"Defesa\s*(\d+)", 1, "")
-    m_res = re.search(r"Fort\.?\s*([+\-]?\d+),\s*Ref\.?\s*([+\-]?\d+),\s*Von\.?\s*([+\-]?\d+)(?:,\s*([^\n]+?))?(?=Pontos de Vida|PV)", bloco, re.I)
-    fort = m_res.group(1) if m_res else ""
-    refl = m_res.group(2) if m_res else ""
-    vont = m_res.group(3) if m_res else ""
-    resist = m_res.group(4).strip().rstrip(",") if (m_res and m_res.group(4)) else ""
+    D = r"‐\-―−\u2010\u2011\u2012\u2013\u2014\u2015\u2212"
+    m_def_b = re.search(rf"Defesa\s+Fort\s+Ref\s+Von\s*(\d+),\s*([+{D}]?\d+),\s*([+{D}]?\d+),\s*([+{D}]?\d+)(?:,\s*([^\n]+?))?(?=Pontos de Vida|PV)", texto, re.I)
+    if m_def_b:
+        defesa = m_def_b.group(1)
+        fort = m_def_b.group(2)
+        refl = m_def_b.group(3)
+        vont = m_def_b.group(4)
+        resist = m_def_b.group(5).strip().rstrip(",") if m_def_b.group(5) else ""
+    else:
+        defesa = g(r"Defesa\s*([\d\.]+)", 1, "").replace(".", "")
+        m_res = re.search(rf"Fort\.?\s*([+{D}]?\d+),\s*Ref\.?\s*([+{D}]?\d+),\s*Von\.?\s*([+{D}]?\d+)(?:,\s*([^\n]+?))?(?=Pontos de Vida|PV)", texto, re.I)
+        fort = m_res.group(1) if m_res else ""
+        refl = m_res.group(2) if m_res else ""
+        vont = m_res.group(3) if m_res else ""
+        resist = m_res.group(4).strip().rstrip(",") if (m_res and m_res.group(4)) else ""
 
-    pv = g(r"Pontos de Vida\s*(\d+)", 1, "")
-    pm = g(r"Pontos de Mana\s*(\d+)", 1, "")
-    desloc = g(r"Deslocamento\s*([^\n]+?)(?=Corpo a Corpo|À Distância|For\s|Ataques|$)", 1, "")
-    cac = g(r"Corpo a Corpo\s*([^\n]+?)(?=À Distância|For\s|Perícias|Tesouro|$)", 1, "")
-    dist = g(r"À Distância\s*([^\n]+?)(?=For\s|Perícias|Tesouro|$)", 1, "")
+    pv = g(r"Pontos de Vida\s*([\d\.]+)", 1, "").replace(".", "")
+    pm = g(r"Pontos de Mana\s*([\d\.]+)", 1, "").replace(".", "")
+    desloc = g(r"Deslocamento\s*([^\n]+?)(?=Corpo a Corpo|À Distância|For\s|Ataques|Pontos de Mana|$)", 1, "")
+    cac = g(r"Corpo a Corpo\s*([^\n]+?)(?=À Distância|For\s|Perícias|Tesouro|[A-Z][a-z]+ \([A-Za-z]+\)|$)", 1, "")
+    dist = g(r"À Distância\s*([^\n]+?)(?=For\s|Perícias|Tesouro|[A-Z][a-z]+ \([A-Za-z]+\)|$)", 1, "")
 
-    # traços usados no PDF: hyphen, figure/en/em dash, barra, minus (U+2010–2015, 2212)
-    D = r"‐-―−\-"
-    A = rf"([+{D}]?\d+|[{D}])"   # valor de atributo (número com sinal, ou traço = nenhum)
-    m_atr = re.search(
-        rf"For\s*{A},\s*Des\s*{A},\s*Con\s*{A},\s*Int\s*{A},\s*Sab\s*{A},\s*Car\s*{A}",
-        bloco, re.I)
-    atributos = ({"for": m_atr.group(1), "des": m_atr.group(2), "con": m_atr.group(3),
-                  "int": m_atr.group(4), "sab": m_atr.group(5), "car": m_atr.group(6)}
-                 if m_atr else {})
+    pat_atr = rf"For\s*{ATTR_VAL},\s*Des\s*{ATTR_VAL},\s*Con\s*{ATTR_VAL},\s*Int\s*{ATTR_VAL},\s*Sab\s*{ATTR_VAL},\s*Car\s*{ATTR_VAL}"
+    m_atr = re.search(pat_atr, texto, re.I)
+
+    def norm_val(v):
+        if not v:
+            return ""
+        v = re.sub(rf"^[{DASHES}]+$", "—", v)
+        v = re.sub(rf"^[{DASHES}](\d+)$", r"-\1", v)
+        return v
+
+    atributos = ({
+        "for": norm_val(m_atr.group(1)),
+        "des": norm_val(m_atr.group(2)),
+        "con": norm_val(m_atr.group(3)),
+        "int": norm_val(m_atr.group(4)),
+        "sab": norm_val(m_atr.group(5)),
+        "car": norm_val(m_atr.group(6)),
+    } if m_atr else {})
 
     pericias = g(r"Perícias\s*([^\n]+?)(?=Equipamento|Tesouro|$)", 1, "")
     equip = g(r"Equipamento\.?\s*([^\n]+?)(?=Tesouro|$)", 1, "")
     tesouro = g(r"Tesouro\s*([^\n]+?)(?=\.\s*[A-ZÀ-Ý]|$)", 1, "")
+    habs = extrair_habilidades(spans)
 
     return dict(tipo_criatura=tipo, subtipo=subtipo, tamanho=tamanho, papel=papel,
                 iniciativa=ini, percepcao=perc, sentidos=sentidos, defesa=defesa,
                 fortitude=fort, reflexos=refl, vontade=vont, resistencias=resist,
                 pv=pv, pm=pm, deslocamento=desloc, corpo_a_corpo=cac, distancia=dist,
-                atributos=atributos, pericias=pericias, equipamento=equip, tesouro=tesouro)
+                atributos=atributos, pericias=pericias, equipamento=equip, tesouro=tesouro,
+                habilidades=habs)
 
 
-TIPO_ANCORA = re.compile(rf"(?:{TIPOS})\s*(?:\([^)]{{0,40}}\))?\s*(?:{TAMS})", re.I)
-BANDA = 205.0  # largura de UMA coluna de stat block (pt); < ~221 (distância entre as
-               # duas colunas) para não fundi-las e capturar a linha de atributos centralizada
+def segmentar_criaturas(stream, grupo):
+    """Segmenta o stream linearizado de spans em criaturas individuais."""
+    anchors_idx = []
+    i = 0
+    while i < len(stream):
+        s = stream[i]
+        if s["kind"] == "nome" and s["sz"] >= 13.0 and not re.match(r"^ND\b", s["t"].strip(), re.I):
+            j = i
+            nome_spans = []
+            while j < len(stream) and stream[j]["kind"] == "nome" and not re.match(r"^ND\b", stream[j]["t"].strip(), re.I):
+                nome_spans.append(stream[j]["t"])
+                j += 1
+            nome_cand = " ".join(nome_spans).strip()
+            proximos_txt = " ".join(x["t"] for x in stream[j:j+12])
+            has_tipo = bool(re.search(rf"(?:{TIPOS})\s*(?:\([^)]{{0,40}}\))?\s*(?:{TAMS})", proximos_txt, re.I))
+            has_nd = bool(re.search(r"ND\s*[\d/S+]+", proximos_txt, re.I)) or bool(re.search(r"ND\s*[\d/S+]+", nome_cand, re.I))
+            if has_tipo or has_nd:
+                anchors_idx.append((i, j, nome_cand, stream[i]["pno"]))
+                i = j - 1
+        i += 1
 
-
-def _nome_do_anchor(anchor, spans_pagina):
-    """Junta os spans-nome na MESMA linha visual do anchor (nome pode vir em 2 spans),
-    parando antes de um 'ND'. Ex.: 'Dragão Jovem' + 'da Proteção'."""
-    y = anchor["y0"]
-    mesma_linha = sorted(
-        [s for s in spans_pagina if s["kind"] == "nome" and abs(s["y0"] - y) <= 5
-         and s["x0"] >= anchor["x0"] - 2],
-        key=lambda s: s["x0"])
-    partes = []
-    for s in mesma_linha:
-        if re.match(r"ND\b", s["t"].strip()):
-            break
-        partes.append(s["t"])
-    return limpar_nome(dehyph(" ".join(partes)))
-
-
-def extrair_grupo(doc, grupo, p0, p1):
-    """Coleta geométrica: cada NOME (Tormenta20 >=13pt) é um anchor; o corpo é o
-    conjunto de spans ABAIXO dele, na mesma FAIXA DE COLUNA, até o próximo anchor."""
     criaturas = []
-    for pno in range(p0, p1 + 1):
-        spans = _kept_spans(doc[pno - 1])
-        anchors = sorted([s for s in spans if _is_nome(s)], key=lambda s: (s["x0"], s["y0"]))
-        # título-destaque 27pt seguido de variante(s) 16pt: NÃO é criatura própria, mas
-        # seu texto é o PREFIXO do nome das variantes ("Dragão Filhote" + "do Bosque").
-        reais, titulos = [], []
-        for a in anchors:
-            if a["sz"] >= 22:
-                variante = any(v is not a and v["sz"] < 22 and abs(v["x0"] - a["x0"]) < BANDA
-                               and 0 <= v["y0"] - a["y0"] <= 60 for v in anchors)
-                if variante:
-                    titulos.append({"x0": a["x0"], "y0": a["y0"], "txt": _nome_do_anchor(a, spans)})
-                    continue
-            reais.append(a)
-        for a in reais:
-            x0 = a["x0"]
-            # próximo anchor na mesma coluna, mais abaixo
-            abaixo = [s for s in reais if s is not a and abs(s["x0"] - x0) < BANDA and s["y0"] > a["y0"] + 5]
-            y_fim = min((s["y0"] for s in abaixo), default=1e9)
-            corpo = [s for s in spans
-                     if a["x0"] - 15 <= s["x0"] <= a["x0"] + BANDA
-                     and a["y0"] - 1 <= s["y0"] < y_fim]
-            texto = _reconstruir(corpo)
-            nome = _nome_do_anchor(a, spans)
-            # prepende o título-destaque acima (mesma coluna) se o nome for só o sufixo
-            tit = [t for t in titulos if abs(t["x0"] - a["x0"]) < BANDA and 0 <= a["y0"] - t["y0"] <= 60]
-            if tit:
-                pref = sorted(tit, key=lambda t: a["y0"] - t["y0"])[0]["txt"]
-                if pref and not nome.startswith(pref):
-                    nome = _dedup_palavras(f"{pref} {nome}")
-            if not nome or len(nome) < 3:
-                continue
-            m_nd = re.search(r"ND\s*([\d/]+)", texto[:120])
-            nd = m_nd.group(1) if m_nd else "?"
-            pagina = pno
-            c = campos(texto)
-            if not c["defesa"] and not c["pv"]:
-                continue
-            if re.search(r"Tesouro|extrair|Continua|Nenhum|^\d", nome) or nome[0].islower():
-                continue
-            criaturas.append({
-                "id": f"amaarton_{slug(nome)}",
-                "tipo": "ameaca", "fonte": FONTE, "nome": nome, "grupo": grupo,
-                "nd": nd, "pagina": pagina, **c,
-            })
+    for idx_entry, (start_i, end_nome_i, raw_nome, pno) in enumerate(anchors_idx):
+        next_start = anchors_idx[idx_entry + 1][0] if idx_entry + 1 < len(anchors_idx) else len(stream)
+        c_spans = stream[start_i:next_start]
+        texto = dehyph(" ".join(s["t"] for s in c_spans))
+
+        m_nd = re.search(r"ND\s*([\d/S+]+)", texto[:200])
+        nd = m_nd.group(1) if m_nd else "?"
+
+        nome = limpar_nome(raw_nome)
+        if not nome or len(nome) < 3 or re.search(r"Tesouro|extrair|Continua|^\d+$", nome):
+            continue
+
+        c_fields = campos_do_bloco(texto, c_spans)
+        if not c_fields["defesa"] and not c_fields["pv"]:
+            continue
+
+        criaturas.append({
+            "id": f"amaarton_{slug(nome)}",
+            "tipo": "ameaca",
+            "fonte": FONTE,
+            "nome": nome,
+            "grupo": grupo,
+            "nd": nd,
+            "pagina": pno,
+            **c_fields
+        })
     return criaturas
 
 
@@ -308,8 +351,9 @@ def main():
 
     todas = []
     for nome, p0, p1, _ in alvo:
-        cs = extrair_grupo(doc, nome, p0, p1)
-        print(f"  {nome:28s} págs {p0}-{p1}: {len(cs)} criaturas")
+        stream = get_group_stream(doc, p0, p1)
+        cs = segmentar_criaturas(stream, nome)
+        print(f"  {nome:28s} págs {p0:3d}-{p1:3d}: {len(cs):2d} criaturas")
         todas.extend(cs)
 
     banco = {"fonte": FONTE, "livro": fontes.titulo(FONTE),

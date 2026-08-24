@@ -1,12 +1,12 @@
 # Família estruturada: Bestiário de *Ameaças de Arton* (livro de expansão)
 
-> **Status: FASE 1 INTEGRADA (324 criaturas 100% completas no FAISS, 75 pendentes isoladas).** Livro de expansão, `fonte="ameacas-arton"`.
+> **Status: FASE 1 INTEGRADA (344 criaturas completas no FAISS, 55 pendentes isoladas).** Livro de expansão, `fonte="ameacas-arton"`.
 > Escopo desta família: **as CRIATURAS** do bestiário (Cap. 1). As raças variantes
 > (espalhadas em caixas soltas) ficam **fora** por decisão de projeto.
 
 Primeira família do esforço **multi-livro**. Difere das do núcleo em dois pontos:
 1. Vem de um livro que **não passou pela `ingestao.py`** → a integração é **aditiva**
-   (não há texto corrido a substituir; embute os 357 chunks estruturados com `fonte="ameacas-arton"`).
+   (não há texto corrido a substituir; embute os 377 chunks estruturados com `fonte="ameacas-arton"`).
 2. Os 29 grupos temáticos compartilham a **mesma entidade** (criatura), **mesmo schema** e
    **mesmo extrator** linear com suporte a tabela larga e fusão contínua.
 
@@ -39,11 +39,19 @@ marca-d'água). Estratégia que funcionou:
 4. **Campos por regex** (mesmo formato do núcleo): tipo/tamanho/papel, Iniciativa, Percepção,
    Defesa, Fort/Ref/Von, PV/PM, Deslocamento, ataques, atributos, perícias, tesouro.
 
-**Dois consertos de raiz (aprendidos por diagnóstico, não palpite):**
+**Consertos de raiz (aprendidos por diagnóstico, não palpite):**
 - **Banda de coluna = 205pt** (< ~221pt entre as duas colunas): impede fundir as colunas e
   captura a **linha de atributos centralizada** (o x0 dela varia muito).
 - **Família completa de traços** nos atributos: o PDF usa **em-dash (U+2014)** para "sem
   atributo" em mortos-vivos sem mente — não só hyphen/en-dash.
+- **Descartar o título-splash decorativo (Tormenta20 ≥20pt)**: cada criatura tem um NOME de
+  ficha (16pt) e, no topo da página, um **título-splash gigante (21–27pt)** que DUPLICA o nome
+  (ou repete o cabeçalho do grupo). Esse splash era a causa dos **"merges"** — grudava no nome
+  real e, na tabela larga, fundia criaturas vizinhas. Regra: numa página que tem nome de ficha
+  (16pt), os spans ≥20pt são splash → descarta; em página de **BOSS** (só nome grande, sem
+  16pt) o ≥20pt é o único nome → mantém. Isso recuperou ~20 criaturas antes perdidas/fundidas.
+- **`limpar_nome(nome, grupo)`**: tira prefixo = nome-do-grupo vazado, e deduplica n-grama
+  liderante / sufixo==prefixo (variantes cujo título 27pt sobra no nome).
 
 Schema de cada criatura (carimba `fonte="ameacas-arton"`):
 ```
@@ -85,26 +93,37 @@ A lista canônica (`GRUPOS`) vive em `extrair_ameacas_arton.py`.
 python extrair_ameacas_arton.py            # grupos-piloto (Dragões + Mortos-Vivos)
 python extrair_ameacas_arton.py --todos    # todos os grupos de criatura
 ```
-Gera `dados/ameacas_arton.json`. Conferência offline: `dados/ameacas_arton.html`
+O extrator já **particiona** a saída: criaturas **completas** (ND+Defesa+PV+≥4 atributos) vão
+para `dados/ameacas_arton.json` (as que entram no índice); as **incompletas** vão para
+`dados/ameacas_arton_pendentes.json` (isoladas, fora do FAISS). O split é reprodutível — não é
+mais um passo manual perdido. Conferência offline: `dados/ameacas_arton.html`
 (gerada por `gerar_ameacas_arton_html.py`).
 
 ---
 
 ## 5. Estado da FASE 1 (todos os grupos integrados)
 
-- **324 criaturas integradas no FAISS** (`fonte="ameacas-arton"`), + 29 chunks-lista por grupo
-  + 4 chunks-lista por faixa de ND = **357 chunks**. As **75 criaturas** que o parser não
-  fechou ficam isoladas em `dados/ameacas_arton_pendentes.json` (**fora** do índice).
-- **Qualidade** (via `diagnostico_ameacas.py`): **314/324 completas (96,9%)**; 10 sem
-  `habilidades` (stat block íntegro, só a lista de habilidades vazia).
-- **Resíduos conhecidos** (conferidos contra o PDF na validação de 2026-08-24):
-  - **Nomes:** 29 nomes malformados (cabeçalho de grupo vazado no nome, variante duplicada)
-    foram **corrigidos no JSON** cruzando com os spans-nome `Tormenta20` ≥13pt do PDF.
-  - **Merges pendentes (parser):** ~6 registros ainda fundem 2+ criaturas vizinhas num só
-    nome (ex.: pág. 63 Avatar de Aharadak + partes; pág. 203 família Glop; págs. 258/277/281).
-    Isso indica **criaturas faltando** como registro próprio → resolver em passada do parser,
-    não por renomear.
-  - **PV de colossal** que quebra entre colunas (ex.: Sckhar) pode capturar só o 1º dígito.
+- **344 criaturas completas integradas no FAISS** (`fonte="ameacas-arton"`), + 29 chunks-lista
+  por grupo + 4 chunks-lista por faixa de ND = **377 chunks**. As **55 criaturas** incompletas
+  ficam isoladas em `dados/ameacas_arton_pendentes.json` (**fora** do índice).
+- **Qualidade** (via `diagnostico_ameacas.py`): nomes limpos na origem — **4 resíduos** só, dos
+  quais 2 são falsos positivos (nomes legítimos "Estouro de Fúrias de Tauron" e "tigre-de-Hyninn"
+  — o livro grafa minúsculo). O conserto do splash + `limpar_nome(nome,grupo)` derrubou os nomes
+  ruins de **47 → ~2** e **recuperou ~20 criaturas** antes fundidas (ex.: "Goblin de Sombreiro"
+  ND2 + "Líder Goblin de Sombreiro" ND6; "Caçador de Impuros" ND8; "Glooop"; "Mímico"; "Cavalo
+  Glacial"; "Kobold Xamã").
+- **Resíduos conhecidos** (validação 2026-08-24, agora no parser, não só no JSON):
+  - **1 merge duro:** pág. 63 **Avatar de Aharadak** — boss multi-parte (Armadura/Asas/Flagelo/
+    Mente/Olhos do Devorador) num layout especial; o registro ficou como "Avatar de Aharadak"
+    (renome manual no JSON) mas as partes não viraram registros próprios.
+  - **~5 habilidades perdidas em TABELA-LARGA:** quando 2 criaturas dividem linhas interleaved
+    (ex.: pág. 300 "Mantícora" vs "Mantícora Primal"), as habilidades vão todas para a 1ª;
+    a 2ª fica sem. Afeta Mantícora, Nereida, Mamute Esqueleto, Gali-Gali, Stagh. Os demais
+    "sem habilidades" (Orc Combatente, Bandido, Pirata, Cavalo, Glop) são **corretamente vazios**.
+  - **PV/ND de colossais** que quebram entre colunas → vão para pendentes (ex.: Sckhar, Tarso,
+    Avatar de Kallyadranoch, Senhor do Gigante). Catalogados, mas incompletos.
+  - **`de Bullton`** (pág. 304): o prefixo "Búfalo Paladino" era splash e foi descartado;
+    renome manual no JSON para "Búfalo Paladino de Bullton".
 
 ---
 

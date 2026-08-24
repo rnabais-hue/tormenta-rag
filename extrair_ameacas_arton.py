@@ -84,7 +84,11 @@ def dehyph(s):
     return re.sub(r"\s+", " ", s).strip()
 
 
-def limpar_nome(nome):
+def _norm_tok(s):
+    return re.sub(r"[^a-z0-9]", "", s.lower())
+
+
+def limpar_nome(nome, grupo=""):
     nome = nome.strip(" \t.,;:)(")
     for corte in [r".*Tesouro[^.]*\.", r".*para extrair\)\.?", r".*\(Continua[^)]*\)",
                   r".*Car\s*[+\-–]?\d+", r"^\d+\s+"]:
@@ -94,15 +98,52 @@ def limpar_nome(nome):
     ws = nome.split()
     if not ws:
         return ""
+    # 1) Descarta prefixo = NOME DO GRUPO vazado como cabeçalho de página
+    #    (ex.: "brutos & indomáveis Meio-Orc Bandoleiro" -> "Meio-Orc Bandoleiro").
+    if grupo:
+        gt = [t for t in (_norm_tok(x) for x in grupo.split()) if t]
+        nt = [_norm_tok(x) for x in ws]
+        gi = 0
+        wi = 0
+        while gi < len(gt) and wi < len(ws) - 1:
+            if nt[wi] == "":            # tokens pontuais (&, -) não contam
+                wi += 1
+                continue
+            if nt[wi] == gt[gi]:
+                gi += 1
+                wi += 1
+            else:
+                break
+        if gi == len(gt) and wi >= 1:   # casou o grupo inteiro
+            ws = ws[wi:]
+    # 2) Dedup consecutivo simples
     dedup = [ws[0]]
     for w in ws[1:]:
         if w.lower() != dedup[-1].lower():
             dedup.append(w)
-    nome = " ".join(dedup)
-    n = len(dedup)
-    if n >= 2 and n % 2 == 0 and dedup[:n//2] == dedup[n//2:]:
-        nome = " ".join(dedup[:n//2])
-    return nome
+    ws = dedup
+    low = [w.lower() for w in ws]
+    # 3) N-grama LIDERANTE repetido: tokens[:k]==tokens[k:2k] (splash + nome idênticos)
+    changed = True
+    while changed and len(low) >= 2:
+        changed = False
+        for k in range(len(low) // 2, 0, -1):
+            if low[:k] == low[k:2 * k]:
+                ws = ws[k:]
+                low = low[k:]
+                changed = True
+                break
+    # 4) Sufixo == prefixo sobreposto (ex.: "Senhor do Gigante Rubro Senhor do Gigante")
+    for k in range(len(low) // 2, 1, -1):
+        if low[:k] == low[-k:]:
+            ws = ws[:-k]
+            low = low[:-k]
+            break
+    # 5) Metades idênticas (fallback do original)
+    n = len(ws)
+    if n >= 2 and n % 2 == 0 and [w.lower() for w in ws[:n // 2]] == [w.lower() for w in ws[n // 2:]]:
+        ws = ws[:n // 2]
+    return " ".join(ws).strip()
 
 
 def has_separated_labels(c1, c2):
@@ -130,6 +171,20 @@ def get_group_stream(doc, p0, p1):
     for pno in range(p0, p1 + 1):
         page = doc[pno - 1]
         blocks = page.get_text("dict")["blocks"]
+        # Pré-scan: a página tem algum NOME em tamanho de ficha (16pt, <20)? Se tem,
+        # os spans Tormenta20 >=20pt são TÍTULOS-SPLASH decorativos / cabeçalho de grupo
+        # (duplicam o nome ou repetem o grupo) e devem sair — foram a causa dos "merges".
+        # Em páginas de BOSS (só nome grande, sem 16pt) o >=20pt é o único nome: mantém.
+        pagina_tem_nome_ficha = False
+        for b in blocks:
+            if "lines" not in b:
+                continue
+            for l in b["lines"]:
+                for s in l["spans"]:
+                    if (s["font"].startswith("Tormenta20") and 12.5 < s["size"] < 20
+                            and s["text"].strip()
+                            and not re.match(r"^ND\b", s["text"].strip(), re.I)):
+                        pagina_tem_nome_ficha = True
         c1, c2 = [], []
         for b in blocks:
             if "lines" not in b:
@@ -143,6 +198,8 @@ def get_group_stream(doc, p0, p1):
                         continue
                     if fn.startswith("Tormenta20") and sz <= 12.5:
                         continue
+                    if fn.startswith("Tormenta20") and sz >= 20 and pagina_tem_nome_ficha:
+                        continue  # título-splash / cabeçalho de grupo decorativo
                     if fn.startswith("SourceSansPro") and (sz <= 8.5 or sz >= 9.8):
                         continue
                     x0, y0, x1, y1 = s["bbox"]
@@ -320,7 +377,7 @@ def segmentar_criaturas(stream, grupo):
         m_nd = re.search(r"ND\s*([\d/S+]+)", texto[:200])
         nd = m_nd.group(1) if m_nd else "?"
 
-        nome = limpar_nome(raw_nome)
+        nome = limpar_nome(raw_nome, grupo)
         if not nome or len(nome) < 3 or re.search(r"Tesouro|extrair|Continua|^\d+$", nome):
             continue
 
@@ -341,6 +398,18 @@ def segmentar_criaturas(stream, grupo):
     return criaturas
 
 
+OUT_PENDENTES = BASE / "dados" / "ameacas_arton_pendentes.json"
+
+
+def esta_completa(c):
+    """Predicado de completude: ND válido + Defesa + PV + >=4 atributos preenchidos.
+    Criaturas que falham vão para o arquivo de PENDENTES (isoladas, fora do índice)."""
+    at = c.get("atributos") or {}
+    n_attr = sum(1 for v in at.values() if v)
+    return (c.get("nd") not in (None, "", "?") and bool(c.get("defesa"))
+            and bool(c.get("pv")) and n_attr >= 4)
+
+
 def main():
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
     todos = "--todos" in sys.argv
@@ -356,10 +425,20 @@ def main():
         print(f"  {nome:28s} págs {p0:3d}-{p1:3d}: {len(cs):2d} criaturas")
         todas.extend(cs)
 
+    completas = [c for c in todas if esta_completa(c)]
+    pendentes = [c for c in todas if not esta_completa(c)]
+
     banco = {"fonte": FONTE, "livro": fontes.titulo(FONTE),
-             "total_criaturas": len(todas), "criaturas": todas}
+             "total_criaturas": len(completas), "criaturas": completas}
     OUT.write_text(json.dumps(banco, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"\nTotal: {len(todas)} criaturas -> {OUT}")
+
+    banco_pend = {"fonte": FONTE, "livro": fontes.titulo(FONTE),
+                  "total_criaturas": len(pendentes), "criaturas": pendentes}
+    OUT_PENDENTES.write_text(json.dumps(banco_pend, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    print(f"\nTotal bruto: {len(todas)} criaturas")
+    print(f"  Completas (-> índice): {len(completas)} -> {OUT.name}")
+    print(f"  Pendentes (isoladas) : {len(pendentes)} -> {OUT_PENDENTES.name}")
 
 
 if __name__ == "__main__":

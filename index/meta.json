@@ -1,13 +1,13 @@
 {
   "modelo_embed": "BAAI/bge-m3",
   "dim": 1024,
-  "n_chunks": 1655,
+  "n_chunks": 1705,
   "n_secoes": 288,
   "pdf": "Tormenta20-Edicao-Jogo-do-Ano-12-06-2024.pdf",
   "max_chars": 2000,
   "overlap": 200,
   "racas_estruturadas": 17,
-  "atualizado_em": "2026-08-23T21:06:52",
+  "atualizado_em": "2026-08-23T21:50:32",
   "classes_estruturadas": 14,
   "poderes_classe_estruturados": 296,
   "poderes_gerais_estruturados": 162,
@@ -21,5 +21,6 @@
   "ultima_atualizacao": "2026-08-23T17:17:45",
   "ameacas_estruturadas": 80,
   "regras_jogo_estruturadas": 48,
-  "mundo_arton_estruturado": 34
+  "mundo_arton_estruturado": 34,
+  "recompensas_estruturadas": 104
 }

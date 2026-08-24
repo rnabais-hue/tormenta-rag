@@ -792,6 +792,114 @@ def _satisfaz_mundo_arton(chunk, campo, valor):
     return False
 
 
+# ---- filtro híbrido de RECOMPENSAS & ITENS MÁGICOS (Capítulo 8) -------------
+def detectar_filtro_recompensa(query, chunks):
+    """Detecta perguntas sobre itens mágicos, encantos, artefatos, acessórios e tesouros."""
+    ql = _sem_acento(query)
+
+    # 1. Regras de Tesouro e Uso
+    if re.search(r"\b(tabela\s+de\s+tesouro|tesouro\s+por\s+nd|rolagem\s+de\s+tesouro|riqueza\s+por\s+nd)\b", ql):
+        return ("nome_recompensa", "Tabela 8-1: Riqueza e Tesouros por Nível de Desafio (ND)", "tabela de tesouro por ND")
+    if re.search(r"\b(limite\s+de\s+itens(\s+magicos)?|quantos\s+itens\s+magicos|sintonia\s+de\s+itens)\b", ql):
+        return ("nome_recompensa", "Regras de Uso e Sintonia de Itens Mágicos", "regras de uso de itens mágicos")
+    if re.search(r"\b(fabricar\s+item\s+magico|fabricacao\s+de\s+itens\s+magicos|destruir\s+item\s+magico)\b", ql):
+        return ("nome_recompensa", "Fabricação e Destruição de Itens Mágicos", "fabricação de itens mágicos")
+    if re.search(r"\b(preco\s+de\s+pocoes|preco\s+de\s+pergaminhos|pocoes\s+e\s+pergaminhos)\b", ql):
+        return ("nome_recompensa", "Poções e Pergaminhos (Preços e Círculos de Magia)", "regras de poções e pergaminhos")
+
+    # 2. Listas Consolidadas
+    if re.search(r"\b(todos\s+os\s+encantos\s+de\s+armas|quais\s+(sao\s+os\s+)?encantos\s+de\s+armas|lista\s+de\s+encantos\s+de\s+armas)\b", ql):
+        return ("tipo", "recompensa_lista", "lista de encantos de armas")
+    if re.search(r"\b(todos\s+os\s+encantos\s+de\s+armaduras|quais\s+(sao\s+os\s+)?encantos\s+de\s+armaduras|lista\s+de\s+encantos\s+de\s+armaduras)\b", ql):
+        return ("tipo", "recompensa_lista", "lista de encantos de armaduras")
+    if re.search(r"\b(todos\s+os\s+acessorios|quais\s+(sao\s+os\s+)?acessorios|lista\s+de\s+acessorios)\b", ql):
+        return ("tipo", "recompensa_lista", "lista de acessórios mágicos")
+    if re.search(r"\b(quais\s+(sao\s+os\s+)?artefatos|lista\s+de\s+artefatos|artefatos\s+de\s+arton)\b", ql):
+        return ("tipo", "recompensa_lista", "lista de artefatos de Arton")
+
+    # 3. Artefatos Lendários
+    artefatos_map = {
+        "holy avenger": "A Espada-Deus (Holy Avenger)",
+        "espada-deus": "A Espada-Deus (Holy Avenger)",
+        "espada deus": "A Espada-Deus (Holy Avenger)",
+        "joia da alma": "A Joia da Alma",
+        "baralho do caos": "O Baralho do Caos",
+        "olho de sszzaas": "O Olho de Sszzaas",
+        "rubis da virtude": "Os Rubis da Virtude",
+        "cetro das cores": "O Cetro das Cores",
+        "cranio negro": "O Crânio Negro",
+    }
+    for k, v in artefatos_map.items():
+        if re.search(r"\b" + k + r"\b", ql):
+            return ("nome_recompensa", v, f"artefato {v}")
+
+    # 4. Encantos de Armas Específicos
+    encantos_armas_nomes = [
+        "Aborrecedora", "Ameaçadora", "Antagônica", "Arremesso", "Asfixiante", "Assassina",
+        "Caçadora", "Congelante", "Conjuradora", "Corrosiva", "Dançarina", "Defensora",
+        "Destruidora", "Distante", "Drenante", "Eletrizante", "Energética", "Excruciante",
+        "Flamejante", "Formidável", "Lancinante", "Magnífica", "Pungente", "Sagrada",
+        "Sanguinária", "Tumular", "Veloz", "Venenosa", "Vorpal"
+    ]
+    for en in encantos_armas_nomes:
+        enl = _sem_acento(en.lower())
+        if re.search(r"\b(encanto\s+|arma\s+)?" + enl + r"\b", ql) and re.search(r"\b(encanto|arma|dano|efeito|bonus|critico)\b", ql):
+            return ("encanto_arma", en, f"encanto de arma {en}")
+
+    # 5. Encantos de Armaduras Específicos
+    encantos_armad_nomes = [
+        "Abençoada", "Animada", "Apaixonante", "Asfixiante", "Bastião", "Camuflada",
+        "Defensora", "Deslizante", "Destemida", "Espinhosa", "Fantasmagórica", "Fortificada",
+        "Guardiã", "Ilusória", "Impenetrável", "Invulnerável", "Polida", "Protetora",
+        "Refletora", "Reluzente", "Resistente", "Retribuidora", "Salteadora", "Sombria"
+    ]
+    for en in encantos_armad_nomes:
+        enl = _sem_acento(en.lower())
+        if re.search(r"\b(encanto\s+|armadura\s+|escudo\s+)?" + enl + r"\b", ql) and re.search(r"\b(encanto|armadura|escudo|defesa|protecao)\b", ql):
+            return ("encanto_armadura", en, f"encanto de armadura {en}")
+
+    # 6. Acessórios Mágicos Específicos
+    acessorios_nomes = [
+        "Anel da Proteção", "Anel de Cura", "Anel de Regeneração", "Anel do Invisível",
+        "Botas Aladas", "Botas da Velocidade", "Braçadeiras da Força", "Brincos da Sagacidade",
+        "Broche do Escudo", "Capa da Bruxaria", "Capa do Saltimbanco", "Cinto do Campeão",
+        "Colar de Contas", "Luvas da Destreza", "Manto da Noite", "Pingente da Sensibilidade",
+        "Tapete Voador", "Tiara do Intelecto"
+    ]
+    for ac in acessorios_nomes:
+        acl = _sem_acento(ac.lower())
+        if re.search(r"\b" + acl + r"\b", ql):
+            return ("nome_recompensa", ac, f"acessório {ac}")
+
+    # 7. Armas e Armaduras Específicas
+    especificos_nomes = [
+        "Arco do Poder", "Azagaia do Relâmpago", "Chicote de Presas", "Espada da Justiça",
+        "Espada Solar", "Lança da Montaria", "Machado das Tempestades", "Maça do Terror",
+        "Martelo do Trovão", "Tridente do Povo do Mar", "Armadura da Donzela",
+        "Armadura do Dragão", "Carapaça de Ferro", "Cota da Rapidez", "Escudo de Valkaria",
+        "Escudo Espelho", "Manto de Teias", "Placas do Titã"
+    ]
+    for it in especificos_nomes:
+        itl = _sem_acento(it.lower())
+        if re.search(r"\b" + itl + r"\b", ql):
+            return ("nome_recompensa", it, f"item específico {it}")
+
+    return None
+
+
+def _satisfaz_recompensa(chunk, campo, valor):
+    tp = chunk.get("tipo", "")
+    if campo == "encanto_arma":
+        return tp == "encanto_arma" and chunk.get("nome_recompensa") == valor
+    if campo == "encanto_armadura":
+        return tp == "encanto_armadura" and chunk.get("nome_recompensa") == valor
+    if campo == "nome_recompensa":
+        return chunk.get("nome_recompensa") == valor or chunk.get("titulo") == valor
+    if campo == "tipo":
+        return tp == valor
+    return False
+
+
 def buscar(query, index, chunks, model, k=TOP_K):
     """Embeda a pergunta e retorna os k chunks mais similares (com score).
 
@@ -988,6 +1096,22 @@ def buscar(query, index, chunks, model, k=TOP_K):
                 hits.append(c)
             return hits[:20]
 
+    filtro_rec = detectar_filtro_recompensa(query, chunks)
+    if filtro_rec:
+        campo, valor, rotulo = filtro_rec
+        idxs = [i for i, c in enumerate(chunks)
+                if _satisfaz_recompensa(c, campo, valor)]
+        if idxs:
+            vecs = np.array([index.reconstruct(int(i)) for i in idxs], dtype="float32")
+            sims = vecs @ q[0]
+            hits = []
+            for j in np.argsort(-sims):
+                c = dict(chunks[idxs[int(j)]])
+                c["score"] = float(sims[int(j)])
+                c["match_filtro"] = rotulo
+                hits.append(c)
+            return hits[:20]
+
     scores, ids = index.search(q, k)
     hits = []
     for score, i in zip(scores[0], ids[0]):
@@ -1114,6 +1238,7 @@ def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True
     filtro_am = detectar_filtro_ameaca(query, chunks)
     filtro_rj = detectar_filtro_regra_jogo(query, chunks)
     filtro_ma = detectar_filtro_mundo_arton(query, chunks)
+    filtro_rec = detectar_filtro_recompensa(query, chunks)
     intent_poder = detectar_intent_poder(query)
     registro = {
         "ts": datetime.now().isoformat(timespec="seconds"),
@@ -1144,6 +1269,8 @@ def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True
                              if filtro_rj else None),
         "filtro_mundo_arton": ({"campo": filtro_ma[0], "valor": filtro_ma[1]}
                               if filtro_ma else None),
+        "filtro_recompensa": ({"campo": filtro_rec[0], "valor": filtro_rec[1]}
+                             if filtro_rec else None),
         "filtro_poder": ({"tipo": intent_poder[0], "rotulo": intent_poder[2]}
                          if intent_poder else None),
         "resposta": resposta,

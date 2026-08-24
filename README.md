@@ -971,6 +971,9 @@ Efeito medido:
 ### Regras de Jogo, Combate & Parceiros (Capítulo 5 & 6)
 - Documentação completa da família estruturada de Regras de Jogo e Parceiros: consulte [docs/familias/jogando.md](docs/familias/jogando.md).
 
+### Recompensas, Itens Mágicos & Artefatos (Capítulo 8)
+- Documentação completa da família estruturada de Recompensas e Itens Mágicos: consulte [docs/familias/recompensas.md](docs/familias/recompensas.md).
+
 ### O Mundo de Arton (Capítulo 9)
 - Documentação completa da família estruturada do Mundo de Arton: consulte [docs/familias/mundo_arton.md](docs/familias/mundo_arton.md).
 

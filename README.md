@@ -30,7 +30,7 @@ Drive, para performance e para não sincronizar GBs).
 - [x] PDF do livro em `livro\` (exemplar próprio, uso pessoal).
 - [x] Dependências instaladas (ver §6).
 - [x] **Ingestão pronta** (`ingestao.py`) → índice gerado em `index\`
-      (**1165 chunks** brutos da ingestão via TOC; hoje **~1655 chunks** após
+      (**1165 chunks** brutos da ingestão via TOC; hoje **~1498 chunks** após
       integrar as famílias estruturadas — ver §11 —, embeddings bge-m3, FAISS).
 - [x] **Consulta pronta** (`perguntar.py`) → busca + Qwen3-8B via Ollama, com
       citação de fonte (seção/página).
@@ -107,6 +107,21 @@ Drive, para performance e para não sincronizar GBs).
       (34 chunks: 30 regiões + 3 listas + 1 linha do tempo; substitui os 113 chunks de texto corrido do
       Cap. 9) e com **filtro híbrido** por reino/região/lugar/potência (`detectar_filtro_mundo_arton`). Doc
       em [`docs/familias/mundo_arton.md`](docs/familias/mundo_arton.md).
+- [x] **Conhecimento estruturado — recompensas / itens mágicos (Capítulo 8)**: 104 registros em
+      `dados/recompensas.json` (29 encantos de arma, 24 de armadura, armas/armaduras específicas, 18
+      acessórios, 7 artefatos supremos, poções/pergaminhos, tabelas de tesouro por ND), **integrados ao
+      índice** (104 chunks; substitui os 54 de texto corrido do Cap. 8) e com **filtro híbrido** por
+      encanto/item/acessório/artefato/regra (`detectar_filtro_recompensa`). Doc em
+      [`docs/familias/recompensas.md`](docs/familias/recompensas.md).
+- [x] **Conhecimento estruturado — fichas das 14 classes + O Mestre (Capítulos 1 e 6)**: fichas completas
+      das 14 classes (PV/PM, proficiências, perícias, habilidades automáticas condensadas e **tabela de
+      progressão nível-a-nível**) + regras do Mestre (ambientes/queda/afogamento/fogo, perigos complexos,
+      doenças e venenos, perseguições) em `dados/mestre_classes.json`, **integrados ao índice** (22 chunks:
+      14 fichas + 8 de regras; substitui 243 chunks de texto corrido dos Caps. 1 e 6) e com **filtro
+      híbrido** (`detectar_filtro_classe_progressao` / `detectar_filtro_mestre`). Doc em
+      [`docs/familias/mestre_classes.md`](docs/familias/mestre_classes.md). **Nota:** as fichas consolidam
+      o antigo par visão-geral/habilidades; a granularidade por-habilidade virou resumo na ficha, mas os
+      poderes de classe (296) e os chunks de **evidência de atributo** (14, restaurados) permanecem.
 
 **Fluxo de uso hoje:** clicar no atalho **"RAG Tormenta20"** → navegador abre em
 `http://127.0.0.1:8000` → perguntar → marcar **OK/Problema**. Tudo fica em `logs\`.
@@ -418,8 +433,10 @@ reembutir o resto; idempotente). Subseções abaixo detalham cada uma.
 | Ameaças / Bestiário (Capítulo 7) | 80 (+13 listas, +3 regras) | ND / faixa de ND / grupo (`detectar_filtro_ameaca`) — doc em `docs/familias/ameacas.md` |
 | Regras de Jogo / Combate & Parceiros (Cap. 5 e 6) | 48 (7 manobras, 10 parceiros, +regras) | manobra / ação / tática / ferimento / parceiro (`detectar_filtro_regra_jogo`) — doc em `docs/familias/jogando.md` |
 | Mundo de Arton / Geografia (Capítulo 9) | 30 (+3 listas, +1 linha do tempo) | reino / região / lugar / potência (`detectar_filtro_mundo_arton`) — doc em `docs/familias/mundo_arton.md` |
+| Recompensas / Itens Mágicos (Capítulo 8) | 104 (encantos, específicos, acessórios, 7 artefatos) | encanto / item / acessório / artefato / regra (`detectar_filtro_recompensa`) — doc em `docs/familias/recompensas.md` |
+| Fichas das 14 Classes + O Mestre (Caps. 1 e 6) | 22 (14 fichas + 8 regras) | ficha/progressão de classe e regras do Mestre (`detectar_filtro_classe_progressao` / `detectar_filtro_mestre`) — doc em `docs/familias/mestre_classes.md` |
 
-Índice atual: **~1655 chunks** (1165 brutos + estruturados − textos corridos
+Índice atual: **~1498 chunks** (1165 brutos + estruturados − textos corridos
 substituídos). ⚠️ Cuidado com a **ordem de re-run** dos integradores (ver a nota nos
 Poderes de classe).
 

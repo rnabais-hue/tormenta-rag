@@ -259,6 +259,8 @@ C:\LLM-Local\tormenta\
 ├─ geradores.py              backend de GERAÇÃO plugável (env TORMENTA_GERADOR: ollama-local | ollama-remoto | api-claude)
 ├─ fontes.py                 registro canônico das FONTES/livros (id → título/versão) — procedência multi-livro
 ├─ migrar_fonte.py           backfill: carimba `fonte` nos chunks sem procedência (metadado puro, sem re-embed)
+├─ extrair_ameacas_arton.py  [EM CURSO] bestiário de *Ameaças de Arton* (fonte=ameacas-arton) — geométrico (docs/familias/ameacas_arton.md)
+├─ gerar_ameacas_arton_html.py  [EM CURSO] ferramenta de conferência do bestiário de Ameaças de Arton
 ├─ extrair_magias.py         extração ESTRUTURADA das 198 magias + 5 regras (Cap. 4) → dados/magias.json (docs/familias/magia.md)
 ├─ gerar_magias_html.py      gera a ferramenta de conferência das magias (dados/magias.html)
 ├─ integrar_magias.py        substitui os 135 chunks de texto corrido do Cap. 4 por 219 finos (1/magia + listas)
@@ -436,6 +438,13 @@ que repetem/variam/estendem uma entidade do núcleo devem ser registros próprio
 `fonte` distinta (e, quando fizer sentido, um campo de vínculo à entidade-base) — nunca
 sobrescrever silenciosamente o chunk do núcleo. O índice atual é 100% `nucleo` (backfill
 por `migrar_fonte.py`).
+
+**Expansão multi-livro — EM CURSO.** Primeira família de expansão: o **bestiário de
+*Ameaças de Arton*** (`fonte="ameacas-arton"`, só criaturas). Extração por auto-descoberta
+**geométrica** (o livro tem layout adversarial — ver a doc). Cadência: **grupo por grupo**,
+com o piloto (Dragões + Mortos-Vivos) validando o método, e **paralelização por lote de
+grupos** (mesmo extrator congelado, 1 JSON por lote, merge; só uma frente edita o extrator).
+Doc completa e a partição dos grupos em [`docs/familias/ameacas_arton.md`](docs/familias/ameacas_arton.md).
 
 | Família | Nº | Filtro híbrido em `perguntar.py` |
 |---|---|---|

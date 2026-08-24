@@ -122,6 +122,10 @@ Drive, para performance e para não sincronizar GBs).
       [`docs/familias/mestre_classes.md`](docs/familias/mestre_classes.md). **Nota:** as fichas consolidam
       o antigo par visão-geral/habilidades; a granularidade por-habilidade virou resumo na ficha, mas os
       poderes de classe (296) e os chunks de **evidência de atributo** (14, restaurados) permanecem.
+- [x] **Procedência multi-livro (fundação)**: todo chunk carrega `fonte` (id do livro em `fontes.py`); a
+      citação nomeia o **livro + página** ("segundo *Ameaças de Arton*, pág. X") e o log grava `fonte`/`livro`.
+      Índice atual 100% `nucleo` (livro básico), marcado por `migrar_fonte.py`. Base para adicionar os livros
+      de expansão sem colisão de regras entre edições. Ver §11.
 
 **Fluxo de uso hoje:** clicar no atalho **"RAG Tormenta20"** → navegador abre em
 `http://127.0.0.1:8000` → perguntar → marcar **OK/Problema**. Tudo fica em `logs\`.
@@ -253,6 +257,8 @@ C:\LLM-Local\tormenta\
 ├─ personagem.py             Stage D: motor que avalia B+C p/ um personagem — poderes disponíveis + árvore de pré-requisitos (§11)
 ├─ perguntar.py              núcleo da consulta (busca vetorial + filtro híbrido + motor de poderes B/C/D + geração) + CLI + logs
 ├─ geradores.py              backend de GERAÇÃO plugável (env TORMENTA_GERADOR: ollama-local | ollama-remoto | api-claude)
+├─ fontes.py                 registro canônico das FONTES/livros (id → título/versão) — procedência multi-livro
+├─ migrar_fonte.py           backfill: carimba `fonte` nos chunks sem procedência (metadado puro, sem re-embed)
 ├─ extrair_magias.py         extração ESTRUTURADA das 198 magias + 5 regras (Cap. 4) → dados/magias.json (docs/familias/magia.md)
 ├─ gerar_magias_html.py      gera a ferramenta de conferência das magias (dados/magias.html)
 ├─ integrar_magias.py        substitui os 135 chunks de texto corrido do Cap. 4 por 219 finos (1/magia + listas)
@@ -367,7 +373,8 @@ reprocessar o índice** a cada dúvida.
 - `logs/consultas.jsonl` — uma linha JSON por pergunta:
   `ts, pergunta, k, modelo_embed, modelo_llm, gerador, n_chunks_indice, filtro_metadado,
    filtro_pericia, filtro_origem, filtro_deus, filtro_atributo, filtro_equipamento, filtro_poder, resposta,
-   fontes[ {rank, id, secao, pagina, score, previa, match_filtro?} ], seg_busca, seg_geracao`.
+   fontes[ {rank, id, fonte, livro, secao, pagina, score, previa, match_filtro?} ], seg_busca, seg_geracao`.
+   (`fonte` = id do livro; `livro` = rótulo resolvido via `fontes.py`.)
    (`gerador` = backend de geração ativo, ver §5 e `geradores.py`.)
 - `logs/avaliacoes.jsonl` — quando você clica **OK/Problema** na interface:
   `ts, pergunta, veredito, nota, fontes, resposta`.
@@ -419,6 +426,16 @@ jogo como registros tipados** (não pedaços soltos de texto), guiando-se pela
 uma: `extrair_*.py` (PDF→JSON, por tipografia) → ferramenta de conferência HTML →
 `integrar_*.py` (substitui os chunks de texto corrido pelos estruturados, sem
 reembutir o resto; idempotente). Subseções abaixo detalham cada uma.
+
+**Procedência (multi-livro).** Cada chunk carrega `fonte` — o id de um livro
+registrado em [`fontes.py`](fontes.py) (`nucleo`, `ameacas-arton`, `herois-arton`,
+`atlas-arton`, `deuses-arton`). O chunk guarda só o id; o rótulo de exibição
+("Ameaças de Arton, pág. X") é resolvido na citação. **Contrato ao adicionar um
+livro:** todo `extrair_/integrar_` novo carimba a sua `fonte` + `pagina`; expansões
+que repetem/variam/estendem uma entidade do núcleo devem ser registros próprios com
+`fonte` distinta (e, quando fizer sentido, um campo de vínculo à entidade-base) — nunca
+sobrescrever silenciosamente o chunk do núcleo. O índice atual é 100% `nucleo` (backfill
+por `migrar_fonte.py`).
 
 | Família | Nº | Filtro híbrido em `perguntar.py` |
 |---|---|---|

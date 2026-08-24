@@ -23,5 +23,8 @@
   "regras_jogo_estruturadas": 48,
   "mundo_arton_estruturado": 34,
   "recompensas_estruturadas": 104,
-  "mestre_estruturado": 7
+  "mestre_estruturado": 7,
+  "fontes": {
+    "nucleo": 1498
+  }
 }

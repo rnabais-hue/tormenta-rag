@@ -36,10 +36,12 @@ TOP_K = 5
 
 INSTRUCAO = (
     "Você é um assistente de regras do RPG Tormenta20. Responda à pergunta "
-    "USANDO SOMENTE os trechos do livro fornecidos como contexto. Seja preciso "
-    "e direto. Cite a(s) fonte(s) usando a marca [Fonte N]. Se a resposta não "
-    "estiver no contexto, diga claramente que não encontrou no material fornecido "
-    "— não invente regra."
+    "USANDO SOMENTE os trechos fornecidos como contexto. Seja preciso e direto. "
+    "Cite a(s) fonte(s) usando a marca [Fonte N] e, quando útil, nomeie o LIVRO e a "
+    "PÁGINA indicados no cabeçalho da fonte (ex.: 'segundo Ameaças de Arton, pág. 12'). "
+    "Se trechos de livros diferentes divergirem, diga de qual livro vem cada regra. "
+    "Se a resposta não estiver no contexto, diga claramente que não encontrou no "
+    "material fornecido — não invente regra."
 )
 
 
@@ -68,6 +70,11 @@ from personagem import Mundo, Personagem, bloco_overview, norm as _pnorm
 # geradores.py via env TORMENTA_GERADOR (ollama-local padrão | ollama-remoto |
 # api-claude). A recuperação (busca vetorial + filtros) continua 100% local aqui.
 import geradores
+
+# ----------------------------------------------------- procedência (multi-livro)
+# Registro canônico dos livros-fonte. Cada chunk guarda o id (`fonte`); o rótulo
+# humano ("Ameaças de Arton, pág. X") é resolvido na citação a partir daqui.
+import fontes
 
 _MUNDO = None
 
@@ -1231,8 +1238,9 @@ def montar_prompt(query, hits):
     """Monta o texto de contexto numerado + a pergunta."""
     blocos = []
     for n, h in enumerate(hits, 1):
+        livro = fontes.titulo(h.get("fonte"))
         blocos.append(
-            f"[Fonte {n}] (Seção: {h['secao']} — pág. {h['pagina']})\n{h['texto']}"
+            f"[Fonte {n}] ({livro}, pág. {h['pagina']} — Seção: {h['secao']})\n{h['texto']}"
         )
     contexto = "\n\n".join(blocos)
     nota = ""
@@ -1273,12 +1281,16 @@ def registrar_log(registro):
 
 
 def fontes_de_hits(hits):
-    """Converte os chunks recuperados no formato leve usado em logs/respostas."""
-    fontes = []
+    """Converte os chunks recuperados no formato leve usado em logs/respostas.
+    Inclui a procedência: `fonte` (id do livro) e `livro` (rótulo para exibição)."""
+    saida = []
     for n, h in enumerate(hits, 1):
+        fid = h.get("fonte") or fontes.FONTE_PADRAO
         f = {
             "rank": n,
             "id": h.get("id"),
+            "fonte": fid,
+            "livro": fontes.titulo(fid),
             "secao": h["secao"],
             "pagina": h["pagina"],
             "score": round(h["score"], 4),
@@ -1286,8 +1298,8 @@ def fontes_de_hits(hits):
         }
         if h.get("match_filtro"):
             f["match_filtro"] = h["match_filtro"]
-        fontes.append(f)
-    return fontes
+        saida.append(f)
+    return saida
 
 
 def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True):

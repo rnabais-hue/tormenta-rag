@@ -436,15 +436,20 @@ registrado em [`fontes.py`](fontes.py) (`nucleo`, `ameacas-arton`, `herois-arton
 livro:** todo `extrair_/integrar_` novo carimba a sua `fonte` + `pagina`; expansões
 que repetem/variam/estendem uma entidade do núcleo devem ser registros próprios com
 `fonte` distinta (e, quando fizer sentido, um campo de vínculo à entidade-base) — nunca
-sobrescrever silenciosamente o chunk do núcleo. O índice atual é 100% `nucleo` (backfill
-por `migrar_fonte.py`).
+sobrescrever silenciosamente o chunk do núcleo. Índice atual (2352 chunks): `nucleo` 1498 +
+`ameacas-arton` 377 + `herois-arton` 477.
 
-**Expansão multi-livro — EM CURSO.** Primeira família de expansão: o **bestiário de
-*Ameaças de Arton*** (`fonte="ameacas-arton"`, só criaturas). Extração por auto-descoberta
-**geométrica** (o livro tem layout adversarial — ver a doc). Cadência: **grupo por grupo**,
-com o piloto (Dragões + Mortos-Vivos) validando o método, e **paralelização por lote de
-grupos** (mesmo extrator congelado, 1 JSON por lote, merge; só uma frente edita o extrator).
-Doc completa e a partição dos grupos em [`docs/familias/ameacas_arton.md`](docs/familias/ameacas_arton.md).
+**Expansão multi-livro — EM CURSO.**
+
+*Ameaças de Arton* (`fonte="ameacas-arton"`) — **BESTIÁRIO FEITO.** 344 criaturas completas
+(+55 pendentes isoladas) por auto-descoberta **geométrica** (layout adversarial). Conserto de
+raiz do parser (descartar título-splash decorativo) recuperou ~20 criaturas antes fundidas e
+limpou os nomes na origem. 377 chunks. Doc: [`docs/familias/ameacas_arton.md`](docs/familias/ameacas_arton.md).
+
+*Heróis de Arton* (`fonte="herois-arton"`) — **Cap. 1 PARCIAL** (3 de ~5 sub-famílias). Feitas:
+5 Novas Raças, 443 Novos Poderes (classe + gerais), classe Treinador (+pet). 477 chunks. Faltam
+Classes Variantes (14), Novas Origens (30), Tabelas. Layout IowanOldStyle (não SourceSansPro).
+Doc: [`docs/familias/herois_campeoes.md`](docs/familias/herois_campeoes.md).
 
 | Família | Nº | Filtro híbrido em `perguntar.py` |
 |---|---|---|

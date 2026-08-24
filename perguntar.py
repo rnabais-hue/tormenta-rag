@@ -25,15 +25,13 @@ from pathlib import Path
 
 import numpy as np
 import faiss
-import requests
 from sentence_transformers import SentenceTransformer
 
 BASE = Path(__file__).parent
 INDEX_DIR = BASE / "index"
 LOG_DIR = BASE / "logs"
 LOG_CONSULTAS = LOG_DIR / "consultas.jsonl"
-OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
-MODELO_LLM = "qwen3:8b"
+MODELO_LLM = "qwen3:8b"   # rótulo do modelo do backend padrão (ollama-local); ver geradores.py
 TOP_K = 5
 
 INSTRUCAO = (
@@ -64,6 +62,12 @@ def carregar():
 # um paladino nível 6 pode pegar?") com um bloco FACTUAL determinístico — sem
 # alucinar pré-requisito. O motor vive em personagem.py e lê os JSON de dados.
 from personagem import Mundo, Personagem, bloco_overview, norm as _pnorm
+
+# ----------------------------------------------------- gerador plugável (backend)
+# A GERAÇÃO da resposta é desacoplada da recuperação: o backend é escolhido em
+# geradores.py via env TORMENTA_GERADOR (ollama-local padrão | ollama-remoto |
+# api-claude). A recuperação (busca vetorial + filtros) continua 100% local aqui.
+import geradores
 
 _MUNDO = None
 
@@ -1239,50 +1243,25 @@ def montar_prompt(query, hits):
     return f"CONTEXTO:\n{contexto}\n\nPERGUNTA: {query}{nota}"
 
 
-def _payload_ollama(prompt, stream):
-    return {
-        "model": MODELO_LLM,
-        "messages": [
-            {"role": "system", "content": INSTRUCAO},
-            {"role": "user", "content": prompt},
-        ],
-        "think": False,                 # desliga o modo 'thinking' (mais rápido)
-        "stream": stream,
-        "options": {"temperature": 0.2},
-    }
+# A geração roteia pelo backend plugável (geradores.py). Os nomes iter_ollama /
+# perguntar_ollama são preservados por compatibilidade (interface.py importa
+# iter_ollama); o backend real (ollama-local padrão, ollama-remoto ou api-claude)
+# é decidido por geradores.backend_ativo(). INSTRUCAO segue como prompt de sistema
+# e TEMPERATURA=0.2 (factual). O Ollama local mantém think:false (paridade).
+TEMPERATURA = 0.2
 
 
 def iter_ollama(prompt):
-    """Gera a resposta token a token (para streaming). Cada yield é um pedaço
-    de texto. Manter os bytes fluindo evita que conexões ociosas longas sejam
+    """Gera a resposta token a token (streaming) via backend ativo. Cada yield é um
+    pedaço de texto. Manter os bytes fluindo evita que conexões ociosas longas sejam
     derrubadas ('Failed to fetch') e dá feedback progressivo na CPU lenta."""
-    resp = requests.post(OLLAMA_URL, json=_payload_ollama(prompt, True),
-                         stream=True, timeout=600)
-    resp.raise_for_status()
-    for linha in resp.iter_lines():
-        if not linha:
-            continue
-        dado = json.loads(linha)
-        if "message" in dado and dado["message"].get("content"):
-            yield dado["message"]["content"]
-        if dado.get("done"):
-            break
+    yield from geradores.iter_gerar(prompt, INSTRUCAO, temperatura=TEMPERATURA)
 
 
 def perguntar_ollama(prompt, stream=True):
-    """Chama o Qwen3-8B via Ollama e devolve o texto completo. Se stream=True,
+    """Gera a resposta completa via backend ativo (geradores.py). Se stream=True,
     também imprime os tokens no terminal enquanto chegam (usado pela CLI)."""
-    if not stream:
-        resp = requests.post(OLLAMA_URL, json=_payload_ollama(prompt, False),
-                             timeout=600)
-        resp.raise_for_status()
-        return resp.json()["message"]["content"]
-    partes = []
-    for tok in iter_ollama(prompt):
-        partes.append(tok)
-        print(tok, end="", flush=True)
-    print()
-    return "".join(partes)
+    return geradores.gerar(prompt, INSTRUCAO, stream=stream, temperatura=TEMPERATURA)
 
 
 def registrar_log(registro):
@@ -1348,6 +1327,7 @@ def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True
         "k": k,
         "modelo_embed": meta.get("modelo_embed"),
         "modelo_llm": MODELO_LLM,
+        "gerador": geradores.backend_ativo(),
         "n_chunks_indice": meta.get("n_chunks"),
         "filtro_metadado": ({"atributo": filtro[0], "polaridade": filtro[1]}
                             if filtro else None),
@@ -1421,7 +1401,8 @@ def main():
 
     print("Carregando índice e embedder...")
     index, chunks, model, meta = carregar()
-    print(f"  {meta['n_chunks']} chunks | embedder {meta['modelo_embed']} | LLM {MODELO_LLM}")
+    print(f"  {meta['n_chunks']} chunks | embedder {meta['modelo_embed']} | "
+          f"gerador {geradores.backend_ativo()} (LLM padrão {MODELO_LLM})")
 
     if args.pergunta:
         responder(" ".join(args.pergunta), index, chunks, model, meta, args.k)

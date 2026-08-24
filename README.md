@@ -251,7 +251,8 @@ C:\LLM-Local\tormenta\
 ├─ estruturar_prereqs.py      Stage B: pre_requisito (texto) → pre_requisito_estruturado (predicados) nos JSON de poder (§11)
 ├─ elegibilidade.py           Stage C: deriva campo `elegibilidade` (acesso/conjuração/devoção + flags) nos JSON de poder (§11)
 ├─ personagem.py             Stage D: motor que avalia B+C p/ um personagem — poderes disponíveis + árvore de pré-requisitos (§11)
-├─ perguntar.py              núcleo da consulta (busca vetorial + filtro híbrido + motor de poderes B/C/D + Ollama) + CLI + logs
+├─ perguntar.py              núcleo da consulta (busca vetorial + filtro híbrido + motor de poderes B/C/D + geração) + CLI + logs
+├─ geradores.py              backend de GERAÇÃO plugável (env TORMENTA_GERADOR: ollama-local | ollama-remoto | api-claude)
 ├─ extrair_magias.py         extração ESTRUTURADA das 198 magias + 5 regras (Cap. 4) → dados/magias.json (docs/familias/magia.md)
 ├─ gerar_magias_html.py      gera a ferramenta de conferência das magias (dados/magias.html)
 ├─ integrar_magias.py        substitui os 135 chunks de texto corrido do Cap. 4 por 219 finos (1/magia + listas)
@@ -275,10 +276,11 @@ Atalho: `C:\Users\rnaba\OneDrive\Desktop\RAG Tormenta20.lnk` → o `.bat`.
 
 | Item | Valor | Onde |
 |---|---|---|
-| Modelo de geração | **qwen3:8b** (Q4_K_M, ~5,2 GB) via Ollama | `perguntar.py` |
-| API do Ollama | `http://127.0.0.1:11434/api/chat` | `perguntar.py` |
-| Modo *thinking* do Qwen | **desligado** (`"think": false`) — mais rápido | `perguntar.py` |
-| Temperatura | 0.2 (factual) | `perguntar.py` |
+| Backend de geração | **plugável** via env `TORMENTA_GERADOR` (padrão `ollama-local`) | `geradores.py` |
+| Modelo de geração (padrão) | **qwen3:8b** (Q4_K_M, ~5,2 GB) via Ollama local | `geradores.py` |
+| API do Ollama | `http://127.0.0.1:11434/api/chat` | `geradores.py` |
+| Modo *thinking* do Qwen | **desligado** (`"think": false`) — mais rápido | `geradores.py` |
+| Temperatura | 0.2 (factual) | `perguntar.py` → `geradores.py` |
 | Embedder | **BAAI/bge-m3** (dim **1024**, normalizado) | `ingestao.py` |
 | Índice | FAISS `IndexFlatIP` (produto interno = cosseno) | `ingestao.py` |
 | Chunking | por seção do TOC; seções grandes divididas | `ingestao.py` |
@@ -363,9 +365,10 @@ A interface e a CLI **registram tudo** para permitir catalogar problemas **sem
 reprocessar o índice** a cada dúvida.
 
 - `logs/consultas.jsonl` — uma linha JSON por pergunta:
-  `ts, pergunta, k, modelo_embed, modelo_llm, n_chunks_indice, filtro_metadado,
+  `ts, pergunta, k, modelo_embed, modelo_llm, gerador, n_chunks_indice, filtro_metadado,
    filtro_pericia, filtro_origem, filtro_deus, filtro_atributo, filtro_equipamento, filtro_poder, resposta,
    fontes[ {rank, id, secao, pagina, score, previa, match_filtro?} ], seg_busca, seg_geracao`.
+   (`gerador` = backend de geração ativo, ver §5 e `geradores.py`.)
 - `logs/avaliacoes.jsonl` — quando você clica **OK/Problema** na interface:
   `ts, pergunta, veredito, nota, fontes, resposta`.
 - `logs/servidor.log` — eventos e erros do servidor web.

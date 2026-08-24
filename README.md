@@ -977,6 +977,9 @@ Efeito medido:
 ### O Mundo de Arton (Capítulo 9)
 - Documentação completa da família estruturada do Mundo de Arton: consulte [docs/familias/mundo_arton.md](docs/familias/mundo_arton.md).
 
+### Fichas das 14 Classes (Capítulo 1) & O Mestre (Capítulo 6)
+- Documentação completa da família estruturada de Fichas de Classes e O Mestre: consulte [docs/familias/mestre_classes.md](docs/familias/mestre_classes.md).
+
 ### Condições (Apêndice)
 - Documentação completa da família estruturada de Condições: consulte [docs/familias/condicoes.md](docs/familias/condicoes.md).
 

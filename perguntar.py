@@ -900,6 +900,74 @@ def _satisfaz_recompensa(chunk, campo, valor):
     return False
 
 
+# ---- filtro híbrido de CLASSES (Fichas & Progressão 1º–20º) -----------------
+def detectar_filtro_classe_progressao(query, chunks):
+    """Detecta perguntas sobre fichas de classes, PV/PM por nível, perícias e progressão."""
+    ql = _sem_acento(query)
+
+    if re.search(r"\b(todas\s+as\s+classes|quais\s+(sao\s+as\s+)?classes|lista\s+de\s+classes)\b", ql):
+        return ("tipo", "classe_lista", "lista de todas as 14 classes")
+
+    classes_nomes = [
+        "Arcanista", "Bárbaro", "Bardo", "Bucaneiro", "Caçador", "Cavaleiro",
+        "Clérigo", "Druida", "Guerreiro", "Inventor", "Ladino", "Lutador", "Nobre", "Paladino"
+    ]
+    for cl in classes_nomes:
+        cll = _sem_acento(cl.lower())
+        if re.search(r"\b(classe\s+)?" + cll + r"\b", ql) and re.search(r"\b(classe|pv|pm|nivel|pontos\s+de\s+vida|pontos\s+de\s+mana|proficiencias?|pericias?|habilidades?|progressao|tabela)\b", ql):
+            return ("nome_classe", cl, f"ficha da classe {cl}")
+
+    return None
+
+
+def _satisfaz_classe_progressao(chunk, campo, valor):
+    tp = chunk.get("tipo", "")
+    if campo == "nome_classe":
+        return tp == "classe_ficha" and chunk.get("nome_classe") == valor
+    if campo == "tipo":
+        return tp == valor
+    return False
+
+
+# ---- filtro híbrido de O MESTRE (Ambientes, Queda, Perigos, Doenças) --------
+def detectar_filtro_mestre(query, chunks):
+    """Detecta perguntas sobre regras de mestre, ambientes hostis, perigos e doenças."""
+    ql = _sem_acento(query)
+
+    # 1. Ambientes, Queda, Sufocamento e Fogo
+    if re.search(r"\b(queda|cair|dano\s+de\s+queda|amortecer\s+queda)\b", ql):
+        return ("nome_regra", "Regras de Ambiente: Queda e Impacto", "regras de queda")
+    if re.search(r"\b(sufocamento|afogamento|afogar|prender\s+a\s+respiracao|falta\s+de\s+ar|fumaca)\b", ql):
+        return ("nome_regra", "Regras de Ambiente: Fumaça, Sufocamento e Afogamento", "regras de sufocamento e afogamento")
+    if re.search(r"\b(fogo|em\s+chamas|frio\s+extremo|calor\s+extremo|temperatura)\b", ql):
+        return ("nome_regra", "Regras de Ambiente: Fogo, Frio Extremo e Calor Extremo", "regras de fogo e clima extremo")
+
+    # 2. Perigos e Armadilhas
+    if re.search(r"\b(perigo\s+complexo|perigos\s+complexos|armadilha|armadilhas|desarmar\s+armadilha)\b", ql):
+        return ("nome_regra", "Sistema de Perigos Complexos e Armadilhas", "perigos complexos e armadilhas")
+
+    # 3. Doenças e Venenos
+    if re.search(r"\b(doenca|doencas|febre\s+do\s+esgoto|peste\s+vermelha|lepra|tetano|venenos?\s+de\s+aventura)\b", ql):
+        return ("nome_regra", "Doenças e Venenos de Aventura", "doenças e venenos")
+
+    # 4. Campanhas e Perseguições
+    if re.search(r"\b(perseguicao|perseguicoes|fases\s+da\s+aventura|estrutura\s+de\s+campanha)\b", ql):
+        return ("nome_regra", "Estrutura de Campanhas, Concessão de XP e Perseguições", "campanhas e perseguições")
+
+    return None
+
+
+def _satisfaz_mestre(chunk, campo, valor):
+    tp = chunk.get("tipo", "")
+    if campo == "nome_regra":
+        return tp == "mestre_regra" and (chunk.get("nome_regra") == valor or chunk.get("titulo") == valor)
+    if campo == "categoria_mestre":
+        return chunk.get("categoria_mestre") == valor or tp == "mestre_lista"
+    if campo == "tipo":
+        return tp == valor
+    return False
+
+
 def buscar(query, index, chunks, model, k=TOP_K):
     """Embeda a pergunta e retorna os k chunks mais similares (com score).
 
@@ -1112,6 +1180,38 @@ def buscar(query, index, chunks, model, k=TOP_K):
                 hits.append(c)
             return hits[:20]
 
+    filtro_cl = detectar_filtro_classe_progressao(query, chunks)
+    if filtro_cl:
+        campo, valor, rotulo = filtro_cl
+        idxs = [i for i, c in enumerate(chunks)
+                if _satisfaz_classe_progressao(c, campo, valor)]
+        if idxs:
+            vecs = np.array([index.reconstruct(int(i)) for i in idxs], dtype="float32")
+            sims = vecs @ q[0]
+            hits = []
+            for j in np.argsort(-sims):
+                c = dict(chunks[idxs[int(j)]])
+                c["score"] = float(sims[int(j)])
+                c["match_filtro"] = rotulo
+                hits.append(c)
+            return hits[:20]
+
+    filtro_ms = detectar_filtro_mestre(query, chunks)
+    if filtro_ms:
+        campo, valor, rotulo = filtro_ms
+        idxs = [i for i, c in enumerate(chunks)
+                if _satisfaz_mestre(c, campo, valor)]
+        if idxs:
+            vecs = np.array([index.reconstruct(int(i)) for i in idxs], dtype="float32")
+            sims = vecs @ q[0]
+            hits = []
+            for j in np.argsort(-sims):
+                c = dict(chunks[idxs[int(j)]])
+                c["score"] = float(sims[int(j)])
+                c["match_filtro"] = rotulo
+                hits.append(c)
+            return hits[:20]
+
     scores, ids = index.search(q, k)
     hits = []
     for score, i in zip(scores[0], ids[0]):
@@ -1239,6 +1339,8 @@ def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True
     filtro_rj = detectar_filtro_regra_jogo(query, chunks)
     filtro_ma = detectar_filtro_mundo_arton(query, chunks)
     filtro_rec = detectar_filtro_recompensa(query, chunks)
+    filtro_cl = detectar_filtro_classe_progressao(query, chunks)
+    filtro_ms = detectar_filtro_mestre(query, chunks)
     intent_poder = detectar_intent_poder(query)
     registro = {
         "ts": datetime.now().isoformat(timespec="seconds"),
@@ -1271,6 +1373,10 @@ def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True
                               if filtro_ma else None),
         "filtro_recompensa": ({"campo": filtro_rec[0], "valor": filtro_rec[1]}
                              if filtro_rec else None),
+        "filtro_classe": ({"campo": filtro_cl[0], "valor": filtro_cl[1]}
+                          if filtro_cl else None),
+        "filtro_mestre": ({"campo": filtro_ms[0], "valor": filtro_ms[1]}
+                          if filtro_ms else None),
         "filtro_poder": ({"tipo": intent_poder[0], "rotulo": intent_poder[2]}
                          if intent_poder else None),
         "resposta": resposta,

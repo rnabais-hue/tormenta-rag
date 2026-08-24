@@ -30,7 +30,7 @@ Drive, para performance e para não sincronizar GBs).
 - [x] PDF do livro em `livro\` (exemplar próprio, uso pessoal).
 - [x] Dependências instaladas (ver §6).
 - [x] **Ingestão pronta** (`ingestao.py`) → índice gerado em `index\`
-      (**1165 chunks** brutos da ingestão via TOC; hoje **~1734 chunks** após
+      (**1165 chunks** brutos da ingestão via TOC; hoje **~1655 chunks** após
       integrar as famílias estruturadas — ver §11 —, embeddings bge-m3, FAISS).
 - [x] **Consulta pronta** (`perguntar.py`) → busca + Qwen3-8B via Ollama, com
       citação de fonte (seção/página).
@@ -101,6 +101,12 @@ Drive, para performance e para não sincronizar GBs).
       (48 chunks estruturados; substitui os 93 chunks de texto corrido do Cap. 5) e com **filtro
       híbrido** por manobra/ação/tática/ferimento/parceiro (`detectar_filtro_regra_jogo`). Doc em
       [`docs/familias/jogando.md`](docs/familias/jogando.md).
+- [x] **Conhecimento estruturado — mundo de Arton / geografia (Capítulo 9)**: 30 reinos e regiões
+      (Reinado, grandes potências, lugares lendários, ermos, ilhas) + linha do tempo em
+      `dados/mundo_arton.json` (capital, regente, divindades, cultura, ganchos), **integradas ao índice**
+      (34 chunks: 30 regiões + 3 listas + 1 linha do tempo; substitui os 113 chunks de texto corrido do
+      Cap. 9) e com **filtro híbrido** por reino/região/lugar/potência (`detectar_filtro_mundo_arton`). Doc
+      em [`docs/familias/mundo_arton.md`](docs/familias/mundo_arton.md).
 
 **Fluxo de uso hoje:** clicar no atalho **"RAG Tormenta20"** → navegador abre em
 `http://127.0.0.1:8000` → perguntar → marcar **OK/Problema**. Tudo fica em `logs\`.
@@ -411,8 +417,9 @@ reembutir o resto; idempotente). Subseções abaixo detalham cada uma.
 | Condições (Apêndice) | 35 (+1 regra) | tipo de efeito / escalonamento (`detectar_filtro_condicao`) — doc em `docs/familias/condicoes.md` |
 | Ameaças / Bestiário (Capítulo 7) | 80 (+13 listas, +3 regras) | ND / faixa de ND / grupo (`detectar_filtro_ameaca`) — doc em `docs/familias/ameacas.md` |
 | Regras de Jogo / Combate & Parceiros (Cap. 5 e 6) | 48 (7 manobras, 10 parceiros, +regras) | manobra / ação / tática / ferimento / parceiro (`detectar_filtro_regra_jogo`) — doc em `docs/familias/jogando.md` |
+| Mundo de Arton / Geografia (Capítulo 9) | 30 (+3 listas, +1 linha do tempo) | reino / região / lugar / potência (`detectar_filtro_mundo_arton`) — doc em `docs/familias/mundo_arton.md` |
 
-Índice atual: **~1734 chunks** (1165 brutos + estruturados − textos corridos
+Índice atual: **~1655 chunks** (1165 brutos + estruturados − textos corridos
 substituídos). ⚠️ Cuidado com a **ordem de re-run** dos integradores (ver a nota nos
 Poderes de classe).
 

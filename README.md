@@ -964,6 +964,9 @@ Efeito medido:
 ### Regras de Jogo, Combate & Parceiros (Capítulo 5 & 6)
 - Documentação completa da família estruturada de Regras de Jogo e Parceiros: consulte [docs/familias/jogando.md](docs/familias/jogando.md).
 
+### O Mundo de Arton (Capítulo 9)
+- Documentação completa da família estruturada do Mundo de Arton: consulte [docs/familias/mundo_arton.md](docs/familias/mundo_arton.md).
+
 ### Condições (Apêndice)
 - Documentação completa da família estruturada de Condições: consulte [docs/familias/condicoes.md](docs/familias/condicoes.md).
 

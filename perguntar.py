@@ -698,6 +698,100 @@ def _satisfaz_regra_jogo(chunk, campo, valor):
     return False
 
 
+# ---- filtro híbrido de MUNDO DE ARTON (Reinos, Geografia, Regentes, Lore) ---
+def detectar_filtro_mundo_arton(query, chunks):
+    """Detecta perguntas sobre geografia, reinos, cidades e lore de Arton."""
+    ql = _sem_acento(query)
+
+    # 1. Linha do Tempo e História
+    if re.search(r"\b(linha\s+do\s+tempo|historia\s+de\s+arton|cronologia|marcos\s+historicos)\b", ql):
+        return ("tipo", "mundo_arton_historia", "linha do tempo e história de Arton")
+
+    # 2. Listas Consolidadas
+    if re.search(r"\b(reinos\s+do\s+reinado|quais\s+(sao\s+os\s+)?reinos\s+do\s+reinado|lista\s+de\s+reinos)\b", ql):
+        return ("categoria_regiao", "Reino do Reinado", "reinos do Reinado de Arton")
+    if re.search(r"\b(grandes\s+potencias|nacoes\s+rivais|potencias\s+de\s+arton)\b", ql):
+        return ("categoria_regiao", "Grande Potência", "grandes potências de Arton")
+
+    # 3. Lugares Lendários
+    if re.search(r"\b(academia\s+arcana|talude)\b", ql):
+        return ("nome_reino", "A Academia Arcana", "A Academia Arcana")
+    if re.search(r"\b(vectora|mercado\s+nas\s+nuvens|cidade\s+voadora|vectorius)\b", ql):
+        return ("nome_reino", "Vectora", "Vectora (O Mercado nas Nuvens)")
+
+    # 4. Reinos e Regiões Específicas
+    reinos_map = {
+        "deheon": "Deheon",
+        "valkaria": "Deheon",
+        "bielefeld": "Bielefeld",
+        "ordem da luz": "Bielefeld",
+        "wynlla": "Wynlla",
+        "sophand": "Wynlla",
+        "namalkah": "Namalkah",
+        "hippiontar": "Namalkah",
+        "ahlen": "Ahlen",
+        "thartann": "Ahlen",
+        "zakharov": "Zakharov",
+        "rhond": "Zakharov",
+        "pondsmania": "Pondsmânia",
+        "supremacia purista": "A Supremacia Purista",
+        "puristas": "A Supremacia Purista",
+        "yuden": "A Supremacia Purista",
+        "imperio de tauron": "O Império de Tauron",
+        "tapista": "O Império de Tauron",
+        "malpetrim": "O Império de Tauron",
+        "lamnor": "Continente Bestial (Lamnor & Duyshidakk)",
+        "duyshidakk": "Continente Bestial (Lamnor & Duyshidakk)",
+        "urkkthran": "Continente Bestial (Lamnor & Duyshidakk)",
+        "reino dos mortos": "O Reino dos Mortos",
+        "aslynn": "O Reino dos Mortos",
+        "samburdia": "Repúblicas Livres de Sambúrdia",
+        "trebuck": "Os Feudos de Trebuck",
+        "sckharshantallas": "Sckharshantallas",
+        "sckhar": "Sckharshantallas",
+        "salistick": "Salistick",
+        "svalas": "Svalas",
+        "leverick": "Svalas",
+        "doherimm": "Doherimm",
+        "reino dos anoes": "Doherimm",
+        "lenorienn": "Lenórienn (A Tragédia Élfica)",
+        "sanguinarias": "As Montanhas Sanguinárias",
+        "uivantes": "As Montanhas Uivantes",
+        "ermos purpuras": "Ermos Púrpuras & Deserto da Perdição",
+        "deserto da perdicao": "Ermos Púrpuras & Deserto da Perdição",
+        "smokestone": "O Covil dos Pistoleiros (Smokestone)",
+        "pistoleiros": "O Covil dos Pistoleiros (Smokestone)",
+        "tyrondir": "As Ruínas de Tyrondir",
+        "tres mares": "Os Três Mares & Khubar",
+        "khubar": "Os Três Mares & Khubar",
+        "galrasia": "O Mundo Perdido (Galrasia)",
+        "mundo perdido": "O Mundo Perdido (Galrasia)",
+        "tamu-ra": "O Império de Jade (Tamu-ra)",
+        "tamura": "O Império de Jade (Tamu-ra)",
+        "imperio de jade": "O Império de Jade (Tamu-ra)",
+        "moreania": "Moreania (As Ilhas dos Moreau)",
+        "moreau": "Moreania (As Ilhas dos Moreau)",
+        "tormenta": "A Tormenta & Áreas de Tormenta",
+    }
+
+    for k, v in reinos_map.items():
+        if re.search(r"\b" + k + r"\b", ql):
+            return ("nome_reino", v, f"reino/região {v}")
+
+    return None
+
+
+def _satisfaz_mundo_arton(chunk, campo, valor):
+    tp = chunk.get("tipo", "")
+    if campo == "nome_reino":
+        return tp == "mundo_arton" and chunk.get("nome_reino") == valor
+    if campo == "categoria_regiao":
+        return chunk.get("categoria_regiao") == valor or tp == "mundo_arton_lista"
+    if campo == "tipo":
+        return tp == valor
+    return False
+
+
 def buscar(query, index, chunks, model, k=TOP_K):
     """Embeda a pergunta e retorna os k chunks mais similares (com score).
 
@@ -878,6 +972,22 @@ def buscar(query, index, chunks, model, k=TOP_K):
                 hits.append(c)
             return hits[:20]
 
+    filtro_ma = detectar_filtro_mundo_arton(query, chunks)
+    if filtro_ma:
+        campo, valor, rotulo = filtro_ma
+        idxs = [i for i, c in enumerate(chunks)
+                if _satisfaz_mundo_arton(c, campo, valor)]
+        if idxs:
+            vecs = np.array([index.reconstruct(int(i)) for i in idxs], dtype="float32")
+            sims = vecs @ q[0]
+            hits = []
+            for j in np.argsort(-sims):
+                c = dict(chunks[idxs[int(j)]])
+                c["score"] = float(sims[int(j)])
+                c["match_filtro"] = rotulo
+                hits.append(c)
+            return hits[:20]
+
     scores, ids = index.search(q, k)
     hits = []
     for score, i in zip(scores[0], ids[0]):
@@ -1003,6 +1113,7 @@ def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True
     filtro_c = detectar_filtro_condicao(query, chunks)
     filtro_am = detectar_filtro_ameaca(query, chunks)
     filtro_rj = detectar_filtro_regra_jogo(query, chunks)
+    filtro_ma = detectar_filtro_mundo_arton(query, chunks)
     intent_poder = detectar_intent_poder(query)
     registro = {
         "ts": datetime.now().isoformat(timespec="seconds"),
@@ -1031,6 +1142,8 @@ def consultar(query, index, chunks, model, meta, k=TOP_K, stream=False, log=True
                           if filtro_am else None),
         "filtro_regra_jogo": ({"campo": filtro_rj[0], "valor": filtro_rj[1]}
                              if filtro_rj else None),
+        "filtro_mundo_arton": ({"campo": filtro_ma[0], "valor": filtro_ma[1]}
+                              if filtro_ma else None),
         "filtro_poder": ({"tipo": intent_poder[0], "rotulo": intent_poder[2]}
                          if intent_poder else None),
         "resposta": resposta,

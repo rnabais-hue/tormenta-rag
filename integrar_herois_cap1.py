@@ -215,6 +215,23 @@ def chunks_variantes():
     return out
 
 
+def chunks_tabelas():
+    p = BASE / "dados" / "tabelas_herois.json"
+    if not p.exists():
+        return []
+    data = json.loads(p.read_text(encoding="utf-8"))
+    out = []
+    for t in data["tabelas"]:
+        out.append({
+            "titulo": f"Tabela {t['numero']}: {t['titulo']} ({LIVRO})",
+            "secao": f"{SEC} > Tabelas para Personagens > {t['titulo']}",
+            "pagina": 98, "fonte": FONTE_ID,
+            "texto": f"Tabela {t['numero']} — {t['titulo']} ({LIVRO}, Cap. 1).\n{t['texto']}",
+            "tipo": "tabela", "nome": t["titulo"],
+        })
+    return out
+
+
 def eh_herois(c):
     return c.get("fonte") == FONTE_ID or str(c.get("secao", "")).startswith("Heróis de Arton")
 
@@ -248,13 +265,14 @@ def integrar():
         print(f"      Removendo {rem} chunks herois-arton anteriores (idempotência)")
 
     novos = (chunks_racas() + chunks_poderes() + chunks_treinador()
-             + chunks_origens() + chunks_variantes())
+             + chunks_origens() + chunks_variantes() + chunks_tabelas())
     n_raca = sum(1 for c in novos if c["tipo"] == "raca")
     n_pod = sum(1 for c in novos if c["tipo"] == "poder")
     n_cls = sum(1 for c in novos if c["tipo"] == "classe")
     n_ori = sum(1 for c in novos if c["tipo"] == "origem")
+    n_tab = sum(1 for c in novos if c["tipo"] == "tabela")
     print(f"[3/5] {len(novos)} chunks gerados (raças {n_raca}, poderes {n_pod}+listas, "
-          f"classes {n_cls}, origens {n_ori}).")
+          f"classes {n_cls}, origens {n_ori}, tabelas {n_tab}).")
 
     if manter_idx:
         vecs_m = np.empty((len(manter_idx), dim), dtype="float32")
@@ -284,7 +302,7 @@ def integrar():
     meta["n_chunks"] = len(todos_chunks)
     meta.setdefault("fontes", {})[FONTE_ID] = len(novos)
     meta["herois_cap1_estruturado"] = {"racas": n_raca, "poderes": n_pod,
-                                       "classes": n_cls, "origens": n_ori}
+                                       "classes": n_cls, "origens": n_ori, "tabelas": n_tab}
     meta["ultima_atualizacao"] = datetime.now().isoformat(timespec="seconds")
     (INDEX_DIR / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
 

@@ -1,8 +1,8 @@
 # Família estruturada: *Heróis de Arton* — Cap. 1: Campeões de Arton
 
-> **Status: INTEGRADO (5 famílias-entidade no FAISS; só faltam as Tabelas de referência).**
-> 2º livro de expansão, `fonte="herois-arton"`. Cap. 1 (págs 8–103) = opções de personagem
-> (raças, classes, origens, poderes). Prioridade do usuário entre livros: **1 → 3 → 2 → 4**.
+> **Status: CAP 1 COMPLETO E INTEGRADO (6 famílias no FAISS).** 2º livro de expansão,
+> `fonte="herois-arton"`. Cap. 1 (págs 8–103) = opções de personagem (raças, classes, origens,
+> poderes, tabelas). Prioridade do usuário entre livros: **1 → 3 → 2 → 4**.
 
 *Heróis de Arton* v1.1 (332 págs, 4 caps) é o "livro do jogador". Diferente dos outros PDFs,
 tem **TOC nativo bom** (`doc.get_toc()`, 183 entradas) — a segmentação parte dele/da tipografia.
@@ -27,7 +27,7 @@ tem **TOC nativo bom** (`doc.get_toc()`, 183 entradas) — a segmentação parte
 | **Nova Classe: Treinador** | 18–23 | `extrair_treinador_herois.py` | ✅ integrado |
 | **Classes Variantes** (14) | 24–47 | `extrair_variantes_herois.py` | ✅ integrado |
 | **Novas Origens** (30) | 48–55 | `extrair_origens_herois.py` | ✅ integrado |
-| Tabelas para Personagens | 98–103 | — | ⏳ falta (só tabelas de referência) |
+| **Tabelas para Personagens** (6) | 98–103 | `extrair_tabelas_herois.py` | ✅ integrado |
 
 ---
 
@@ -81,6 +81,13 @@ mais habilidades na coluna seguinte → em vez de **parar** na tabela, o parser 
 coluna** dela e retoma. Resultado: caracteristicas completas + habilidades limpas (0 duplicatas,
 0 lixo de tabela). O Vassalo tem 20 "habilidades" legítimas (progressão de nobreza: Pajem→Imperador).
 
+## 4d. Tabelas para Personagens (`extrair_tabelas_herois.py`)
+
+6 tabelas de rolagem (d%) de flavor (págs 98–103): 1-24 Nomes de Personagens (por raça),
+1-25 Aparência, 1-26 Trejeitos, 1-27 Objetivos, 1-28 Nomes p/ Montarias e Mascotes, 1-29 Nomes
+p/ Guildas e Bandos. Não são entidades → **1 chunk por tabela** (`tipo="tabela"`), com o conteúdo
+inteiro para recuperação de referência (não vale estruturar célula a célula).
+
 ## 5. Integração (`integrar_herois_cap1.py`)
 
 Aditiva, `fonte="herois-arton"`, idempotente (remove chunks herois-arton antes de reinserir);
@@ -88,8 +95,8 @@ reconstrói só os vetores novos (não reembute núcleo/ameacas-arton). Chunks:
 - 1 por raça (`tipo="raca"`); 1 por poder (`tipo="poder"`) + listas por classe/categoria
   (`tipo="poder_lista"`); Treinador = visão geral + 1 por habilidade + melhor_amigo (`tipo="classe"`);
   1 por origem (`tipo="origem"`, com `pericias`/`poderes`); cada variante = visão geral + 1 por
-  habilidade (`tipo="classe"`, `subtipo="variante"`).
-- **658 chunks** no total. Citação resolve o livro via `fontes.py` ("Heróis de Arton, pág. X").
+  habilidade (`tipo="classe"`, `subtipo="variante"`); 1 por tabela (`tipo="tabela"`).
+- **664 chunks** no total. Citação resolve o livro via `fontes.py` ("Heróis de Arton, pág. X").
 - Os filtros híbridos existentes (`detectar_filtro` de raça/poder) já cobrem — só a procedência
   (`fonte`) distingue do núcleo. Poderes/raças repetidos entre livros coexistem.
 
@@ -103,8 +110,9 @@ python integrar_herois_cap1.py
 
 ---
 
-## 6. Falta para fechar o Cap 1
+## 6. Cap 1 — 100% COMPLETO
 
-Só as **Tabelas para Personagens** (págs 98–103) — tabelas de referência/resumo das opções, de
-menor valor pra RAG. As 5 famílias-entidade (raças, poderes, Treinador, origens, variantes) estão
-feitas e integradas. Depois do Cap 1: **Cap 3 (Arsenal)**, Cap 2 (Distinções), Cap 4 (Regras Opcionais).
+As 6 famílias (raças, poderes, Treinador, origens, variantes, tabelas) estão extraídas, validadas
+e integradas ao FAISS. Próximo (prioridade do usuário 1→3→2→4): **Cap 3 (Arsenal dos Heróis)** —
+equipamentos, bases, magias arcanas, itens mágicos, artefatos. Depois Cap 2 (Distinções) e Cap 4
+(Regras Opcionais).

@@ -436,8 +436,8 @@ registrado em [`fontes.py`](fontes.py) (`nucleo`, `ameacas-arton`, `herois-arton
 livro:** todo `extrair_/integrar_` novo carimba a sua `fonte` + `pagina`; expansões
 que repetem/variam/estendem uma entidade do núcleo devem ser registros próprios com
 `fonte` distinta (e, quando fizer sentido, um campo de vínculo à entidade-base) — nunca
-sobrescrever silenciosamente o chunk do núcleo. Índice atual (2352 chunks): `nucleo` 1498 +
-`ameacas-arton` 377 + `herois-arton` 477.
+sobrescrever silenciosamente o chunk do núcleo. Índice atual (2533 chunks): `nucleo` 1498 +
+`ameacas-arton` 377 + `herois-arton` 658.
 
 **Expansão multi-livro — EM CURSO.**
 
@@ -446,9 +446,9 @@ sobrescrever silenciosamente o chunk do núcleo. Índice atual (2352 chunks): `n
 raiz do parser (descartar título-splash decorativo) recuperou ~20 criaturas antes fundidas e
 limpou os nomes na origem. 377 chunks. Doc: [`docs/familias/ameacas_arton.md`](docs/familias/ameacas_arton.md).
 
-*Heróis de Arton* (`fonte="herois-arton"`) — **Cap. 1 PARCIAL** (3 de ~5 sub-famílias). Feitas:
-5 Novas Raças, 443 Novos Poderes (classe + gerais), classe Treinador (+pet). 477 chunks. Faltam
-Classes Variantes (14), Novas Origens (30), Tabelas. Layout IowanOldStyle (não SourceSansPro).
+*Heróis de Arton* (`fonte="herois-arton"`) — **Cap. 1 FEITO** (5 famílias-entidade; só faltam as
+Tabelas de referência). 5 Novas Raças, 443 Novos Poderes (classe + gerais), classe Treinador (+pet),
+14 Classes Variantes, 30 Novas Origens. 658 chunks. Layout IowanOldStyle (não SourceSansPro).
 Doc: [`docs/familias/herois_campeoes.md`](docs/familias/herois_campeoes.md).
 
 | Família | Nº | Filtro híbrido em `perguntar.py` |

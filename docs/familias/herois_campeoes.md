@@ -1,7 +1,7 @@
 # Família estruturada: *Heróis de Arton* — Cap. 1: Campeões de Arton
 
-> **Status: PARCIALMENTE INTEGRADO (3 de ~5 sub-famílias no FAISS).** 2º livro de
-> expansão, `fonte="herois-arton"`. Cap. 1 (págs 8–103) = opções de personagem
+> **Status: INTEGRADO (5 famílias-entidade no FAISS; só faltam as Tabelas de referência).**
+> 2º livro de expansão, `fonte="herois-arton"`. Cap. 1 (págs 8–103) = opções de personagem
 > (raças, classes, origens, poderes). Prioridade do usuário entre livros: **1 → 3 → 2 → 4**.
 
 *Heróis de Arton* v1.1 (332 págs, 4 caps) é o "livro do jogador". Diferente dos outros PDFs,
@@ -25,9 +25,9 @@ tem **TOC nativo bom** (`doc.get_toc()`, 183 entradas) — a segmentação parte
 | **Novas Raças** (5) | 10–17 | `extrair_racas_herois.py` | ✅ integrado |
 | **Novos Poderes** (443) | 56–97 | `extrair_poderes_herois.py` | ✅ integrado |
 | **Nova Classe: Treinador** | 18–23 | `extrair_treinador_herois.py` | ✅ integrado |
-| Classes Variantes (14) | 24–47 | — | ⏳ falta |
-| Novas Origens (30) | 48–55 | — | ⏳ falta |
-| Tabelas para Personagens | 98–103 | — | ⏳ falta |
+| **Classes Variantes** (14) | 24–47 | `extrair_variantes_herois.py` | ✅ integrado |
+| **Novas Origens** (30) | 48–55 | `extrair_origens_herois.py` | ✅ integrado |
+| Tabelas para Personagens | 98–103 | — | ⏳ falta (só tabelas de referência) |
 
 ---
 
@@ -63,13 +63,33 @@ campo `melhor_amigo` (o pet da classe + Truques).
 
 ---
 
+## 4b. Novas Origens (`extrair_origens_herois.py`)
+
+30 origens (págs 48–55). Adapta `extrair_origens.py` (nome 21pt, rótulos "Itens."/"Benefícios."
+em negrito, poder único 13–18pt). **Diferença:** o Heróis descreve os benefícios em PROSA
+("Você é treinado em X, Y e Z."), não no formato tagged "(perícias)/(poderes)" do núcleo →
+parse por "treinado em …" **filtrando os tokens contra as 29 perícias canônicas** (robusto a
+"e"/"." grudados). 24/30 treinam perícia; 6 dão outros benefícios (sem perícia, correto).
+
+## 4c. Classes Variantes (`extrair_variantes_herois.py`)
+
+14 variantes (Alquimista, Atleta, Burguês, Duelista, Ermitão, Inovador, Machado de Pedra,
+Magimarcialista, Necromante, Santo, Seteiro, Usurpador, Vassalo, Ventanista; págs 24–47).
+Mesma estrutura da classe Treinador → generaliza aquela lógica num loop sobre âncoras 27pt.
+**Conserto-chave:** a **tabela de progressão** fica no MEIO da lista (base de uma coluna), com
+mais habilidades na coluna seguinte → em vez de **parar** na tabela, o parser **pula só a
+coluna** dela e retoma. Resultado: caracteristicas completas + habilidades limpas (0 duplicatas,
+0 lixo de tabela). O Vassalo tem 20 "habilidades" legítimas (progressão de nobreza: Pajem→Imperador).
+
 ## 5. Integração (`integrar_herois_cap1.py`)
 
 Aditiva, `fonte="herois-arton"`, idempotente (remove chunks herois-arton antes de reinserir);
 reconstrói só os vetores novos (não reembute núcleo/ameacas-arton). Chunks:
 - 1 por raça (`tipo="raca"`); 1 por poder (`tipo="poder"`) + listas por classe/categoria
-  (`tipo="poder_lista"`); Treinador = visão geral + 1 por habilidade + melhor_amigo (`tipo="classe"`).
-- **477 chunks** no total. Citação resolve o livro via `fontes.py` ("Heróis de Arton, pág. X").
+  (`tipo="poder_lista"`); Treinador = visão geral + 1 por habilidade + melhor_amigo (`tipo="classe"`);
+  1 por origem (`tipo="origem"`, com `pericias`/`poderes`); cada variante = visão geral + 1 por
+  habilidade (`tipo="classe"`, `subtipo="variante"`).
+- **658 chunks** no total. Citação resolve o livro via `fontes.py` ("Heróis de Arton, pág. X").
 - Os filtros híbridos existentes (`detectar_filtro` de raça/poder) já cobrem — só a procedência
   (`fonte`) distingue do núcleo. Poderes/raças repetidos entre livros coexistem.
 
@@ -85,6 +105,6 @@ python integrar_herois_cap1.py
 
 ## 6. Falta para fechar o Cap 1
 
-Classes Variantes (14: Alquimista, Atleta, Duelista…), Novas Origens (30, reusa
-`extrair_origens.py`) e Tabelas para Personagens. Depois: Cap 3 (Arsenal), Cap 2 (Distinções),
-Cap 4 (Regras Opcionais).
+Só as **Tabelas para Personagens** (págs 98–103) — tabelas de referência/resumo das opções, de
+menor valor pra RAG. As 5 famílias-entidade (raças, poderes, Treinador, origens, variantes) estão
+feitas e integradas. Depois do Cap 1: **Cap 3 (Arsenal)**, Cap 2 (Distinções), Cap 4 (Regras Opcionais).

@@ -161,6 +161,60 @@ def chunks_treinador():
     return out
 
 
+def chunks_origens():
+    data = _load("origens_herois.json")
+    out = []
+    for o in data["origens"]:
+        nome, pag = o["nome"], o["pagina"]
+        linhas = [f"Origem: {nome} ({LIVRO}, pág. {pag})."]
+        if o.get("resumo"):
+            linhas.append(o["resumo"])
+        if o.get("itens"):
+            linhas.append(f"Itens: {o['itens']}.")
+        if o.get("beneficios"):
+            linhas.append(f"Benefícios: {o['beneficios']}")
+        if o.get("pericias"):
+            linhas.append(f"Perícias concedidas: {', '.join(o['pericias'])}.")
+        if o.get("poder_unico"):
+            pu = o["poder_unico"]
+            linhas.append(f"Poder único — {pu['nome']}: {pu['efeito']}")
+        out.append({
+            "titulo": nome, "secao": f"{SEC} > Novas Origens > {nome}", "pagina": pag,
+            "fonte": FONTE_ID, "texto": "\n".join(linhas), "tipo": "origem",
+            "nome": nome, "pericias": o.get("pericias", []), "poderes": o.get("poderes", []),
+        })
+    return out
+
+
+def chunks_variantes():
+    data = _load("variantes_herois.json")
+    out = []
+    for v in data["variantes"]:
+        nome, pag = v["nome"], v["pagina"]
+        car = v.get("caracteristicas", {})
+        vg = [f"Classe variante: {nome} ({LIVRO}, pág. {pag}). Variante de classe de Heróis de Arton."]
+        for k, lab in [("pv", "Pontos de Vida"), ("pm", "Pontos de Mana"),
+                       ("pericias", "Perícias"), ("proficiencias", "Proficiências")]:
+            if car.get(k):
+                vg.append(f"{lab}: {car[k]}.")
+        if v.get("resumo"):
+            vg.append(v["resumo"])
+        out.append({
+            "titulo": f"{nome} (variante)", "secao": f"{SEC} > Classes Variantes > {nome}",
+            "pagina": pag, "fonte": FONTE_ID, "texto": "\n".join(vg),
+            "tipo": "classe", "subtipo": "variante", "classe": nome, "nome": nome,
+        })
+        for h in v.get("habilidades", []):
+            out.append({
+                "titulo": f"{nome} (variante): {h['nome']}",
+                "secao": f"{SEC} > Classes Variantes > {nome} > {h['nome']}",
+                "pagina": pag, "fonte": FONTE_ID,
+                "texto": f"Habilidade da variante {nome}: {h['nome']} ({LIVRO}, pág. {pag}).\n{h['efeito']}",
+                "tipo": "classe", "subtipo": "variante_habilidade", "classe": nome, "nome": h["nome"],
+            })
+    return out
+
+
 def eh_herois(c):
     return c.get("fonte") == FONTE_ID or str(c.get("secao", "")).startswith("Heróis de Arton")
 
@@ -193,11 +247,14 @@ def integrar():
     if rem:
         print(f"      Removendo {rem} chunks herois-arton anteriores (idempotência)")
 
-    novos = chunks_racas() + chunks_poderes() + chunks_treinador()
+    novos = (chunks_racas() + chunks_poderes() + chunks_treinador()
+             + chunks_origens() + chunks_variantes())
     n_raca = sum(1 for c in novos if c["tipo"] == "raca")
     n_pod = sum(1 for c in novos if c["tipo"] == "poder")
     n_cls = sum(1 for c in novos if c["tipo"] == "classe")
-    print(f"[3/5] {len(novos)} chunks gerados (raças {n_raca}, poderes {n_pod}+listas, classe {n_cls}).")
+    n_ori = sum(1 for c in novos if c["tipo"] == "origem")
+    print(f"[3/5] {len(novos)} chunks gerados (raças {n_raca}, poderes {n_pod}+listas, "
+          f"classes {n_cls}, origens {n_ori}).")
 
     if manter_idx:
         vecs_m = np.empty((len(manter_idx), dim), dtype="float32")
@@ -226,7 +283,8 @@ def integrar():
 
     meta["n_chunks"] = len(todos_chunks)
     meta.setdefault("fontes", {})[FONTE_ID] = len(novos)
-    meta["herois_cap1_estruturado"] = {"racas": n_raca, "poderes": n_pod, "classe_treinador": n_cls}
+    meta["herois_cap1_estruturado"] = {"racas": n_raca, "poderes": n_pod,
+                                       "classes": n_cls, "origens": n_ori}
     meta["ultima_atualizacao"] = datetime.now().isoformat(timespec="seconds")
     (INDEX_DIR / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
 

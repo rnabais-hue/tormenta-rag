@@ -436,8 +436,8 @@ registrado em [`fontes.py`](fontes.py) (`nucleo`, `ameacas-arton`, `herois-arton
 livro:** todo `extrair_/integrar_` novo carimba a sua `fonte` + `pagina`; expansões
 que repetem/variam/estendem uma entidade do núcleo devem ser registros próprios com
 `fonte` distinta (e, quando fizer sentido, um campo de vínculo à entidade-base) — nunca
-sobrescrever silenciosamente o chunk do núcleo. Índice atual (2959 chunks): `nucleo` 1498 +
-`ameacas-arton` 377 + `herois-arton` 1084 (Cap 1: 664 + Arsenal: 205 + Distinções: 215).
+sobrescrever silenciosamente o chunk do núcleo. Índice atual (3067 chunks): `nucleo` 1498 +
+`ameacas-arton` 377 + `herois-arton` 1192 (Cap 1: 664 + Arsenal: 205 + Distinções: 215 + Regras Opcionais: 108).
 
 **Expansão multi-livro — EM CURSO.**
 
@@ -469,6 +469,17 @@ nome gigante; o TOC aponta para a página mecânica, não o início visual), pro
 `tipo="pendencia"`):** 18 poderes de efeito fino em ~8 distinções de layout compacto (nomeados nos
 overviews; efeito a refinar no extrator). Doc: [`docs/familias/herois_distincoes.md`](docs/familias/herois_distincoes.md).
 
+*Heróis de Arton — Cap. 4 (Regras Opcionais)* — **RECORTE SEGURO INTEGRADO** (108 chunks; índice `herois-arton`
+1084→1192). As **listas entity-like** do capítulo: **9 Papéis no Grupo** (descrição + benefício mecânico),
+**54 Complicações** (32 gerais + 22 de classe, com flag `voto`/† e a classe), **7 Objetivos Heroicos**
+(Benefício/Penalidade/Conclusão) e **Idades Variadas** (7 faixas etárias com modificadores + traços, + 19
+mazelas de "O Peso da Idade"). Descoberta-chave de layout REUSÁVEL: **detecção de caixas via `get_drawings()`**
+(retângulos preenchidos) para separar tabela-embutida/sidebar do fluxo da coluna (senão a caixa rouba o texto
+que a contorna); banner de título (span ≥24pt) não é caixa; helper `juntar()` reconstrói o fluxo linha-a-linha
+(hífen de quebra + espaço em falta). **Backlog (chunk `tipo="pendencia"`):** os módulos PROCEDURAIS — Regras
+Mais Soltas, Combate Avançado (+tabelas crítico/morte/falha), Culinária Avançada, Exploração de Masmorras e o
+subsistema **Domínios** (regência/construções/unidades/eventos). Doc: [`docs/familias/herois_regras_opcionais.md`](docs/familias/herois_regras_opcionais.md).
+
 | Família | Nº | Filtro híbrido em `perguntar.py` |
 |---|---|---|
 | Raças | 17 | modificador de atributo (`detectar_filtro`) |
@@ -487,6 +498,7 @@ overviews; efeito a refinar no extrator). Doc: [`docs/familias/herois_distincoes
 | Mundo de Arton / Geografia (Capítulo 9) | 30 (+3 listas, +1 linha do tempo) | reino / região / lugar / potência (`detectar_filtro_mundo_arton`) — doc em `docs/familias/mundo_arton.md` |
 | Recompensas / Itens Mágicos (Capítulo 8) | 104 (encantos, específicos, acessórios, 7 artefatos) | encanto / item / acessório / artefato / regra (`detectar_filtro_recompensa`) — doc em `docs/familias/recompensas.md` |
 | Fichas das 14 Classes + O Mestre (Caps. 1 e 6) | 22 (14 fichas + 8 regras) | ficha/progressão de classe e regras do Mestre (`detectar_filtro_classe_progressao` / `detectar_filtro_mestre`) — doc em `docs/familias/mestre_classes.md` |
+| Regras Opcionais — Heróis Cap. 4 (Papéis, Complicações, Objetivos, Idades) | 108 chunks (9 papéis + 54 complicações + 7 objetivos + 7 faixas + 19 mazelas + overviews/listas) | — (metadados `categoria`/`classe`/`voto`/`modificadores` filtráveis; busca vetorial) — doc em `docs/familias/herois_regras_opcionais.md` |
 
 Índice atual: **~1498 chunks** (1165 brutos + estruturados − textos corridos
 substituídos). ⚠️ Cuidado com a **ordem de re-run** dos integradores (ver a nota nos

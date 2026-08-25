@@ -113,6 +113,7 @@ python integrar_herois_cap1.py
 ## 6. Cap 1 — 100% COMPLETO
 
 As 6 famílias (raças, poderes, Treinador, origens, variantes, tabelas) estão extraídas, validadas
-e integradas ao FAISS. Próximo (prioridade do usuário 1→3→2→4): **Cap 3 (Arsenal dos Heróis)** —
-equipamentos, bases, magias arcanas, itens mágicos, artefatos. Depois Cap 2 (Distinções) e Cap 4
-(Regras Opcionais).
+e integradas ao FAISS. **Cap 3 (Arsenal)**, **Cap 2 (Distinções)** e **Cap 4 (Regras Opcionais)** já têm
+recorte seguro integrado (ver docs próprias). Pendências: fechar Arsenal (Superiores/Capangas/Veículos/
+Magias/Itens Mágicos/Artefatos/Bases), os 18 poderes finos de Distinções, e os módulos procedurais +
+Domínios do Cap 4 — ver [`herois_regras_opcionais.md`](herois_regras_opcionais.md).

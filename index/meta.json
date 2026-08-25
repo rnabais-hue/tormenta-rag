@@ -1,7 +1,7 @@
 {
   "modelo_embed": "BAAI/bge-m3",
   "dim": 1024,
-  "n_chunks": 2959,
+  "n_chunks": 3067,
   "n_secoes": 288,
   "pdf": "Tormenta20-Edicao-Jogo-do-Ano-12-06-2024.pdf",
   "max_chars": 2000,
@@ -18,7 +18,7 @@
   "equipamentos_estruturados": 239,
   "magias_estruturadas": 198,
   "condicoes_estruturadas": 35,
-  "ultima_atualizacao": "2026-08-24T22:32:44",
+  "ultima_atualizacao": "2026-08-25T20:06:57",
   "ameacas_estruturadas": 80,
   "regras_jogo_estruturadas": 48,
   "mundo_arton_estruturado": 34,
@@ -27,7 +27,7 @@
   "fontes": {
     "nucleo": 1498,
     "ameacas-arton": 377,
-    "herois-arton": 1084
+    "herois-arton": 1192
   },
   "ameacas_arton_estruturadas": 344,
   "herois_cap1_estruturado": {
@@ -49,5 +49,16 @@
     "distincoes": 36,
     "poderes_integrados": 177,
     "poderes_finos_backlog": 18
+  },
+  "herois_cap4_regras_opcionais_estruturado": {
+    "papeis": 9,
+    "complicacoes": 54,
+    "objetivos": 7,
+    "faixas": 7,
+    "mazelas": 19,
+    "overviews": 4,
+    "caixas": 3,
+    "listas": 4,
+    "total_chunks": 108
   }
 }

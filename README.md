@@ -436,8 +436,8 @@ registrado em [`fontes.py`](fontes.py) (`nucleo`, `ameacas-arton`, `herois-arton
 livro:** todo `extrair_/integrar_` novo carimba a sua `fonte` + `pagina`; expansões
 que repetem/variam/estendem uma entidade do núcleo devem ser registros próprios com
 `fonte` distinta (e, quando fizer sentido, um campo de vínculo à entidade-base) — nunca
-sobrescrever silenciosamente o chunk do núcleo. Índice atual (2539 chunks): `nucleo` 1498 +
-`ameacas-arton` 377 + `herois-arton` 664.
+sobrescrever silenciosamente o chunk do núcleo. Índice atual (2744 chunks): `nucleo` 1498 +
+`ameacas-arton` 377 + `herois-arton` 869.
 
 **Expansão multi-livro — EM CURSO.**
 
@@ -448,8 +448,17 @@ limpou os nomes na origem. 377 chunks. Doc: [`docs/familias/ameacas_arton.md`](d
 
 *Heróis de Arton* (`fonte="herois-arton"`) — **Cap. 1 COMPLETO** (6 famílias). 5 Novas Raças, 443
 Novos Poderes (classe + gerais), classe Treinador (+pet), 14 Classes Variantes, 30 Novas Origens,
-6 Tabelas para Personagens. 664 chunks. Layout IowanOldStyle (não SourceSansPro). Próximo: Cap. 3
-(Arsenal). Doc: [`docs/familias/herois_campeoes.md`](docs/familias/herois_campeoes.md).
+6 Tabelas para Personagens. 664 chunks. Layout IowanOldStyle (não SourceSansPro).
+Doc: [`docs/familias/herois_campeoes.md`](docs/familias/herois_campeoes.md).
+
+*Heróis de Arton — Cap. 3 (Arsenal)* — **PARCIAL SEGURO INTEGRADO** (205 chunks; índice `herois-arton`
+664→869). Novos Equipamentos validados: 39 armas + 5 munições especiais + 14 armaduras/escudos + 128
+itens gerais (14 subcategorias, menos os 5 veículos-de-catálogo sem descrição) + 2 habilidades de arma,
+com 16 listas de recuperação. Parser de tabela por posição-x (robusto a linhas fundidas do `find_tables`).
+**Pendências (há 1 chunk `tipo="pendencia"` no índice + esta nota):** Itens Superiores/Novas Melhorias,
+Capangas, Veículos (resolve os 5 do catálogo), Novas Magias Arcanas, Novos Itens Mágicos, Artefatos, e a
+subseção Bases (adiada). Follow-up: incluir o equipamento de Heróis em `detectar_filtro_equipamento()`.
+Doc: [`docs/familias/herois_arsenal.md`](docs/familias/herois_arsenal.md).
 
 | Família | Nº | Filtro híbrido em `perguntar.py` |
 |---|---|---|

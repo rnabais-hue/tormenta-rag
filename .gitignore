@@ -18,6 +18,8 @@ index/*
 
 # JSON/HTML estruturados (texto do livro) — não necessários para consumir
 dados/
+# ferramentas de conferência geram HTML com texto verbatim do livro (copyright)
+*.html
 
 # consultas/avaliações (podem conter trechos)
 logs/

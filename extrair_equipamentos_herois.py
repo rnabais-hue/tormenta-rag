@@ -296,6 +296,98 @@ def extrair_tabela_armaduras(doc, paginas):
     return itens
 
 
+# --- Itens Gerais: Tabela 3-4, layout de DUAS colunas independentes ---
+COLS_IG_L = [("nome", 40, 178), ("preco", 178, 222), ("espacos", 222, 290)]
+COLS_IG_R = [("nome", 290, 415), ("preco", 415, 462), ("espacos", 462, 560)]
+
+SUBCATS_IG = [
+    "Equipamento de Aventura", "Ferramentas — Instrumentos Musicais",
+    "Ferramentas — Gerais", "Vestuário", "Esotéricos",
+    "Alquímicos — Preparados", "Alquímicos — Catalisadores", "Alquímicos — Venenos",
+    "Aparatos", "Alimentação — Pratos Especiais", "Alimentação — Bebidas",
+    "Animais", "Veículos", "Serviços — Mercenários", "Serviços — Outros", "Serviços",
+]
+
+def _match_subcat(txt):
+    st = slug(txt.replace("(continuação)", "").replace("(cont.)", ""))
+    if not st:
+        return None
+    for sc in SUBCATS_IG:
+        ssc = slug(sc)
+        if st == ssc or st.startswith(ssc) or ssc.startswith(st) and len(st) >= 6:
+            return sc
+    return None
+
+
+def _norm_preco(p):
+    p = dehyph(p).replace("R$", "T$").replace("RS", "T$")
+    return p.strip()
+
+
+def _parse_lado(cells, cols, subcat_atual):
+    """Retorna (item|None, novo_subcat). cells já filtradas ao lado."""
+    if not cells:
+        return None, subcat_atual
+    txt_full = dehyph(" ".join(t for _, t in cells))
+    tem_preco = any(("T$" in t or "R$" in t) for _, t in cells)
+    if not tem_preco:
+        sc = _match_subcat(txt_full)
+        if sc:
+            return None, sc
+        return None, subcat_atual  # ruído (nota de rodapé, sobra)
+    col = {}
+    for x, t in cells:
+        for nome, lo, hi in cols:
+            if lo <= x < hi:
+                col.setdefault(nome, []).append(t)
+                break
+    if "nome" not in col or "preco" not in col:
+        return None, subcat_atual
+    nome = dehyph(" ".join(col["nome"]))
+    preco = _norm_preco(" ".join(col["preco"]))
+    if not nome or not (preco.startswith("T$")):
+        return None, subcat_atual
+    item = {
+        "id": f"equip:herois:{slug(nome)}",
+        "tipo": "equipamento", "categoria": "item_geral",
+        "subcategoria": subcat_atual, "nome": nome, "preco": preco,
+        "espacos": dehyph(" ".join(col.get("espacos", ["—"]))),
+    }
+    return item, subcat_atual
+
+
+def extrair_itens_gerais(doc, paginas):
+    """Tabela 3-4 (duas colunas, subcat independente por lado)."""
+    itens = []
+    sc_l, sc_r = "Equipamento de Aventura", "Ferramentas — Instrumentos Musicais"
+    for pg in paginas:
+        page = doc[idx(pg)]
+        for y, cells in _linhas_por_y(page, y_tol=5):
+            cells.sort()
+            txt = " ".join(t for _, t in cells)
+            if "Preço" in txt and "Espaços" in txt:
+                continue
+            if txt.strip().startswith("Tabela") or "Capítulo" in txt or "Arsenal dos" in txt:
+                continue
+            left = [(x, t) for x, t in cells if x < 290]
+            right = [(x, t) for x, t in cells if x >= 290]
+            it_l, sc_l = _parse_lado(left, COLS_IG_L, sc_l)
+            it_r, sc_r = _parse_lado(right, COLS_IG_R, sc_r)
+            for it, pg_ in ((it_l, pg), (it_r, pg)):
+                if it:
+                    it["pagina"] = pg_
+                    it["fonte"] = FONTE
+                    it["versao"] = VERSAO
+                    itens.append(it)
+    # dedupe por slug
+    vis, out = set(), []
+    for it in itens:
+        if it["id"] in vis:
+            continue
+        vis.add(it["id"]); out.append(it)
+    return out
+
+
 def casar_descricoes(itens, descs):
     """Anexa descricao por slug (match exato/contido)."""
     usados = set()
@@ -338,10 +430,16 @@ def main():
     armaduras = extrair_tabela_armaduras(doc, [224])
     print(f"  -> {len(armaduras)} armaduras/escudos.")
 
-    print("Extraindo descrições (págs 216–226)...")
-    descs = extrair_descricoes(doc, 216, 226, excluir={
+    print("Extraindo Itens Gerais (Tabela 3-4, págs 228–229)...")
+    gerais = extrair_itens_gerais(doc, [228, 229])
+    print(f"  -> {len(gerais)} itens gerais.")
+
+    print("Extraindo descrições (págs 216–238)...")
+    descs = extrair_descricoes(doc, 216, 238, excluir={
         "Novas Habilidades de Armas", "Armas", "Munições", "Novos Equipamentos",
-        "Armaduras & Escudos", "Armaduras e Escudos", "Estatísticas de Escudos"})
+        "Armaduras & Escudos", "Armaduras e Escudos", "Estatísticas de Escudos",
+        "Itens Gerais", "Equipamento de Aventura", "Ferramentas", "Vestuário",
+        "Esotéricos", "Alquímicos", "Aparatos", "Alimentação", "Animais", "Serviços"})
     print(f"  -> {len(descs)} blocos de descrição.")
 
     # habilidades de arma novas (quadro "Novas Habilidades de Armas")
@@ -359,7 +457,7 @@ def main():
             })
     print(f"  -> {len(habilidades)} habilidades de arma novas.")
 
-    itens_desc = armas + munis + armaduras
+    itens_desc = armas + munis + armaduras + gerais
     orfas = casar_descricoes(itens_desc, descs)
     # descrição combinada "Flechas/Virotes Pesados" cobre ambas as munições pesadas
     comb = next((v for k, v in descs.items() if "Pesados" in k and "/" in k), "")
@@ -382,11 +480,12 @@ def main():
         "armas": armas,
         "municoes": munis,
         "armaduras_escudos": armaduras,
+        "itens_gerais": gerais,
         "habilidades_arma": habilidades,
     }
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(dados, f, ensure_ascii=False, indent=2)
-    total = len(armas) + len(munis) + len(armaduras) + len(habilidades)
+    total = len(armas) + len(munis) + len(armaduras) + len(gerais) + len(habilidades)
     print(f"\n[OK] {total} registros gravados em {OUT}")
 
 

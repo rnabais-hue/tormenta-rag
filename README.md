@@ -436,8 +436,8 @@ registrado em [`fontes.py`](fontes.py) (`nucleo`, `ameacas-arton`, `herois-arton
 livro:** todo `extrair_/integrar_` novo carimba a sua `fonte` + `pagina`; expansões
 que repetem/variam/estendem uma entidade do núcleo devem ser registros próprios com
 `fonte` distinta (e, quando fizer sentido, um campo de vínculo à entidade-base) — nunca
-sobrescrever silenciosamente o chunk do núcleo. Índice atual (3263 chunks): `nucleo` 1498 +
-`ameacas-arton` 377 + `herois-arton` 1388 (Cap 1: 664 + Arsenal: 205 + Distinções: 215 + Regras Opcionais: 304).
+sobrescrever silenciosamente o chunk do núcleo. Índice atual (3504 chunks): `nucleo` 1498 +
+`ameacas-arton` 377 + `herois-arton` 1629 (Cap 1: 664 + Arsenal: 205 + Arsenal Mágico: 241 + Distinções: 215 + Regras Opcionais: 304).
 
 **Expansão multi-livro — EM CURSO.**
 
@@ -455,9 +455,13 @@ Doc: [`docs/familias/herois_campeoes.md`](docs/familias/herois_campeoes.md).
 664→869). Novos Equipamentos validados: 39 armas + 5 munições especiais + 14 armaduras/escudos + 128
 itens gerais (14 subcategorias, menos os 5 veículos-de-catálogo sem descrição) + 2 habilidades de arma,
 com 16 listas de recuperação. Parser de tabela por posição-x (robusto a linhas fundidas do `find_tables`).
-**Pendências (há 1 chunk `tipo="pendencia"` no índice + esta nota):** Itens Superiores/Novas Melhorias,
-Capangas, Veículos (resolve os 5 do catálogo), Novas Magias Arcanas, Novos Itens Mágicos, Artefatos, e a
-subseção Bases (adiada). Follow-up: incluir o equipamento de Heróis em `detectar_filtro_equipamento()`.
+**2ª rodada — ARSENAL MÁGICO INTEGRADO** (+241 chunks; `capitulo="arsenal-magico"`; índice `herois-arton`
+1388→1629): **22 Novas Magias Arcanas** (stat block + aprimoramentos, reusa o schema do núcleo), **8
+Artefatos** e **202 Novos Itens Mágicos** em 11 categorias (encantos/específicos/maldições, padrão rótulo-bold
+como as construções) + 5 regras (Itens Inteligentes/Amaldiçoados). Recuperação rank-1 (Aura de Morte, encanto
+Alvorada, Armadura de Crânio Negro, Anel da Proteção Mental 0,74, maldição Preguiçosa, Ego). **Sub-backlog
+restante (chunk `tipo="pendencia"`):** Itens Superiores/Novas Melhorias, Capangas, Veículos (+5 do catálogo),
+Bases (adiada). Follow-up: incluir o equipamento de Heróis em `detectar_filtro_equipamento()`.
 Doc: [`docs/familias/herois_arsenal.md`](docs/familias/herois_arsenal.md).
 
 *Heróis de Arton — Cap. 2 (Distinções)* — **PARCIAL SEGURO INTEGRADO** (215 chunks; índice `herois-arton`

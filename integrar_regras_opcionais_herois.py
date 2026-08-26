@@ -55,6 +55,8 @@ def chunks_de():
     com = json.loads((D / "complicacoes_herois.json").read_text(encoding="utf-8"))
     obj = json.loads((D / "objetivos_herois.json").read_text(encoding="utf-8"))
     ida = json.loads((D / "idades_herois.json").read_text(encoding="utf-8"))
+    cba = json.loads((D / "combate_avancado_herois.json").read_text(encoding="utf-8"))
+    dom = json.loads((D / "dominios_herois.json").read_text(encoding="utf-8"))
 
     # ---------- Papéis no Grupo ----------
     p0 = pap["pagina"]
@@ -148,22 +150,75 @@ def chunks_de():
                           f"Mazelas de 'O Peso da Idade': {', '.join(m['nome'] for m in ida['mazelas'])}.",
                           tipo="regra_opcional_lista", regra="Idades Variadas"))
 
-    # ---------- Backlog do capítulo ----------
+    # ---------- Combate Avançado ----------
+    b0 = cba["pagina"]
+    out.append(base_chunk("Combate Avançado (visão geral)", "Combate Avançado", b0,
+                          f"Regra opcional de {LIVRO} (Cap. 4). Combate Avançado: {cba['introducao']}",
+                          tipo="regra_opcional", subtipo="overview", regra="Combate Avançado"))
+    for r in cba["regras"]:
+        texto = (f"Regra opcional de combate: {r['nome']} ({LIVRO}, Cap. 4, pág. {r['pagina']}).\n"
+                 f"{r['efeito']}")
+        out.append(base_chunk(f"Combate Avançado: {r['nome']}", f"Combate Avançado > {r['nome']}",
+                              r["pagina"], texto, tipo="regra_opcional", subtipo="combate_avancado",
+                              regra="Combate Avançado", nome=r["nome"]))
+    for tb in cba["tabelas"]:
+        corpo = "\n".join(f"{ln['faixa']}: {ln['efeito']}" for ln in tb["linhas"])
+        texto = f"Tabela de Combate Avançado: {tb['nome']} ({LIVRO}, Cap. 4, pág. {tb['pagina']}).\n{corpo}"
+        out.append(base_chunk(f"Tabela: {tb['nome']}", f"Combate Avançado > Tabela {tb['nome']}",
+                              tb["pagina"], texto, tipo="regra_opcional", subtipo="tabela",
+                              regra="Combate Avançado", nome=tb["nome"]))
+    out.append(base_chunk("Lista das Regras de Combate Avançado", "Combate Avançado > Lista", b0,
+                          f"Regras opcionais de Combate Avançado de {LIVRO} (Cap. 4): "
+                          f"{', '.join(r['nome'] for r in cba['regras'])}. "
+                          f"Tabelas: {', '.join(tb['nome'] for tb in cba['tabelas'])}.",
+                          tipo="regra_opcional_lista", regra="Combate Avançado"))
+
+    # ---------- Domínios ----------
+    dp = dom["pagina"]
+    out.append(base_chunk("Domínios (visão geral)", "Domínios", dp,
+                          f"Regra opcional de {LIVRO} (Cap. 4): subsistema de DOMÍNIOS (regência de um "
+                          f"reino). Partes: {', '.join(m['nome'] for m in dom['modulos'])}. Inclui uma lista "
+                          f"de {dom['total_construcoes']} Construções e a tabela de Unidades Militares.",
+                          tipo="regra_opcional", subtipo="overview", regra="Domínios"))
+    for m in dom["modulos"]:
+        texto = (f"Domínios — {m['nome']} (regra opcional de regência, {LIVRO}, Cap. 4, pág. {m['pagina']}).\n"
+                 f"{m['efeito']}")
+        out.append(base_chunk(f"Domínios: {m['nome']}", f"Domínios > {m['nome']}", m["pagina"],
+                              texto, tipo="regra_opcional", subtipo="dominios", regra="Domínios", nome=m["nome"]))
+    for c in dom["construcoes"]:
+        texto = (f"Construção de domínio: {c['nome']} ({LIVRO}, Cap. 4, pág. {c['pagina']}).\n{c['descricao']}")
+        out.append(base_chunk(f"Construção: {c['nome']}", f"Domínios > Construções > {c['nome']}",
+                              c["pagina"], texto, tipo="construcao_dominio", nome=c["nome"], regra="Domínios"))
+    tu = dom.get("tabela_unidades")
+    if tu:
+        corpo = "\n".join(tu["linhas"])
+        out.append(base_chunk("Domínios: Unidades Militares (Tabela 4-11)", "Domínios > Unidades Militares",
+                              tu["pagina"], f"Unidades Militares de domínio ({LIVRO}, Cap. 4, pág. {tu['pagina']}). "
+                              f"Colunas: {', '.join(tu['colunas'])}.\n{corpo}",
+                              tipo="regra_opcional", subtipo="tabela", regra="Domínios", nome="Unidades Militares"))
+    out.append(base_chunk("Lista das Construções de Domínio", "Domínios > Construções > Lista", dp,
+                          f"As {dom['total_construcoes']} Construções de domínio de {LIVRO} (Cap. 4): "
+                          f"{', '.join(c['nome'] for c in dom['construcoes'])}.",
+                          tipo="regra_opcional_lista", regra="Domínios"))
+
+    # ---------- Backlog do capítulo (encolhido) ----------
     out.append(base_chunk("Backlog do Cap. 4 (Regras Opcionais)", "Backlog", 280,
-        f"Backlog do Cap. 4 (Regras Opcionais) de {LIVRO}: este recorte integrou as LISTAS "
-        f"entity-like (Papéis no Grupo, Complicações, Objetivos Heroicos, Idades Variadas). "
-        f"Ainda NÃO integrados (módulos procedurais): Regras Mais Soltas (Atributos Variados, "
-        f"Raças Abertas, Devoções Abertas), Combate Avançado (incl. tabelas de Acertos Críticos, "
-        f"Teste de Morte, Falhas Críticas), Culinária Avançada, Exploração de Masmorras e o "
-        f"subsistema Domínios (Tornando-se Regente, Construções, Unidades Militares, Turnos de "
-        f"Domínio, Domínios Místicos, Eventos Aleatórios).",
+        f"Backlog do Cap. 4 (Regras Opcionais) de {LIVRO}: integrados as listas entity-like (Papéis, "
+        f"Complicações, Objetivos, Idades), o Combate Avançado (18 regras + 3 tabelas) e o subsistema "
+        f"Domínios (23 módulos + {dom['total_construcoes']} construções + unidades militares). Ainda NÃO "
+        f"integrados: os módulos menores Regras Mais Soltas (Atributos Variados, Raças Abertas, Devoções "
+        f"Abertas), Culinária Avançada e Exploração de Masmorras; e as tabelas-resumo de custo de Domínios "
+        f"(Terrenos 4-9, Construções 4-10, Eventos Aleatórios 4-13).",
         tipo="pendencia", nome="Backlog de Regras Opcionais"))
 
     resumo = dict(
         papeis=pap["total"], complicacoes=com["total"], objetivos=obj["total"],
         faixas=ida["total_faixas"], mazelas=ida["total_mazelas"],
+        combate_regras=cba["total_regras"], combate_tabelas=cba["total_tabelas"],
+        dominios_modulos=dom["total_modulos"], construcoes=dom["total_construcoes"],
         overviews=sum(1 for c in out if c.get("subtipo") == "overview"),
         caixas=sum(1 for c in out if c.get("subtipo") == "caixa"),
+        tabelas=sum(1 for c in out if c.get("subtipo") == "tabela"),
         listas=sum(1 for c in out if c["tipo"] == "regra_opcional_lista"),
         total_chunks=len(out))
     return out, resumo

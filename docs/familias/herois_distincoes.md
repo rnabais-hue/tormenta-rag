@@ -1,9 +1,10 @@
-# Heróis de Arton — Capítulo 2: Distinções (parcial seguro)
+# Heróis de Arton — Capítulo 2: Distinções (COMPLETO)
 
 `fonte="herois-arton"` · `capitulo="distincoes"` · págs 104–215 · versão 1.1
 
-Extração estruturada das **36 Distinções** (entidade NOVA do sistema). Integrado o
-recorte seguro; 18 poderes de efeito fino ficam no backlog (chunk `tipo="pendencia"`).
+Extração estruturada das **36 Distinções** (entidade NOVA do sistema). **Capítulo completo:**
+os 18 poderes de efeito fino (backlog original) foram consertados — todos os 192 poderes têm
+efeito ≥40 chars.
 
 ## O que é uma Distinção (anatomia)
 
@@ -27,8 +28,13 @@ Tormenta20 sz~58 + drop-cap). Estrutura interna, guiada por tipografia:
      senão as **refs inline itálicas** ("Tormenta20, p. X") deslocam e corrompem o efeito.
   3. Descartar `IowanOldStyle-BoldItalic` (epígrafes/pull-quotes flavor).
   4. Máquina de estados conceito→Admissão→Marca→Poderes; nomes de poder quebrados em
-     2 linhas são mesclados **só quando a continuação começa em minúscula** (evita
-     fundir poderes distintos em grids compactos).
+     2 linhas são mesclados quando a continuação começa em minúscula **OU quando o poder
+     anterior ainda está sem efeito** (dois nomes seguidos sem corpo = nome partido; cobre
+     continuações em maiúscula tipo "Postura de Combate:"+"Tomada Furtiva").
+  5. **`COL_X = 280`** (não 290): a coluna DIREITA começa em x~289; cortar em 290 jogava as
+     linhas de efeito em x289 para a "col 0", embaralhando a ordem de leitura dos **grids
+     compactos** → efeito colava na coluna vizinha ou ficava vazio. Essa era a causa-raiz dos
+     "18 poderes finos" do backlog original.
 - `gerar_distincoes_herois_html.py` — conferência visual (destaca efeito curto).
 - `integrar_distincoes_herois.py` — embute e adiciona ao FAISS. **Idempotência ESTREITA**
   (`capitulo=="distincoes"`; não toca em Cap 1/Arsenal/núcleo). Recomputa `meta["fontes"]`.
@@ -48,9 +54,10 @@ Goblin por descrição semântica); backlog recuperável; regressão núcleo (Fa
 núcleo (Smokestone-cidade, "Tormenta") podem rankear o chunk do núcleo primeiro — os
 chunks de distinção existem e aparecem com k maior.
 
-## Backlog (NÃO integrado como chunk próprio)
+## Backlog — RESOLVIDO (2026-08-26)
 
-**18 poderes de distinção com efeito não capturado** (layout compacto/grid — ex.: as
-posturas do Campeão de Dojo, poderes da Amazona/Cavaleiro Feérico). Estão **nomeados no
-overview** de cada distinção, mas o texto do efeito precisa de refino no extrator (o
-efeito colou na coluna vizinha ou ficou vazio). Listados no chunk `tipo="pendencia"`.
+Os **18 poderes de efeito fino** (posturas do Campeão de Dojo, poderes da Amazona/Cavaleiro
+Feérico etc.) foram consertados pelas descobertas #4 e #5 acima (COL_X=280 + merge de nome
+partido em maiúscula). Todos os **192 poderes** agora têm efeito ≥40 chars; o chunk
+`tipo="pendencia"` registra 0 finos. Sem over-merge (contagem por distinção: 4–7 poderes,
+média 5,3).

@@ -436,8 +436,8 @@ registrado em [`fontes.py`](fontes.py) (`nucleo`, `ameacas-arton`, `herois-arton
 livro:** todo `extrair_/integrar_` novo carimba a sua `fonte` + `pagina`; expansões
 que repetem/variam/estendem uma entidade do núcleo devem ser registros próprios com
 `fonte` distinta (e, quando fizer sentido, um campo de vínculo à entidade-base) — nunca
-sobrescrever silenciosamente o chunk do núcleo. Índice atual (3504 chunks): `nucleo` 1498 +
-`ameacas-arton` 377 + `herois-arton` 1629 (Cap 1: 664 + Arsenal: 205 + Arsenal Mágico: 241 + Distinções: 215 + Regras Opcionais: 304).
+sobrescrever silenciosamente o chunk do núcleo. Índice atual (3519 chunks): `nucleo` 1498 +
+`ameacas-arton` 377 + `herois-arton` 1644 (Cap 1: 664 + Arsenal: 205 + Arsenal Mágico: 241 + Distinções: 230 + Regras Opcionais: 304).
 
 **Expansão multi-livro — EM CURSO.**
 
@@ -464,14 +464,13 @@ restante (chunk `tipo="pendencia"`):** Itens Superiores/Novas Melhorias, Capanga
 Bases (adiada). Follow-up: incluir o equipamento de Heróis em `detectar_filtro_equipamento()`.
 Doc: [`docs/familias/herois_arsenal.md`](docs/familias/herois_arsenal.md).
 
-*Heróis de Arton — Cap. 2 (Distinções)* — **PARCIAL SEGURO INTEGRADO** (215 chunks; índice `herois-arton`
-869→1084). **36 Distinções** (entidade NOVA): 1 overview cada (conceito + Admissão/requisito + Marca da
-Distinção + lista de poderes) + **177 poderes de distinção** com efeito limpo + 1 lista + 1 backlog.
-Extração guiada por tipografia: segmentação por **página de splash** (cada distinção = 3 págs a partir do
-nome gigante; o TOC aponta para a página mecânica, não o início visual), processamento **linha-a-linha**
-(refs inline não deslocam), máquina de estados conceito→Admissão→Marca→Poderes. **Backlog (chunk
-`tipo="pendencia"`):** 18 poderes de efeito fino em ~8 distinções de layout compacto (nomeados nos
-overviews; efeito a refinar no extrator). Doc: [`docs/familias/herois_distincoes.md`](docs/familias/herois_distincoes.md).
+*Heróis de Arton — Cap. 2 (Distinções)* — **COMPLETO** (230 chunks, `capitulo="distincoes"`).
+**36 Distinções** (entidade NOVA): 1 overview cada (conceito + Admissão/requisito + Marca da Distinção + lista
+de poderes) + **192 poderes de distinção** (todos com efeito limpo) + 1 lista. Extração guiada por tipografia:
+segmentação por **página de splash** (o TOC aponta para a página mecânica, não o início visual), processamento
+**linha-a-linha** (refs inline não deslocam). **Backlog RESOLVIDO:** os 18 poderes de efeito fino do grid
+compacto foram consertados — causa-raiz era `COL_X` (a coluna direita começa em x≈289; o corte em 290 roubava
+linhas do efeito) + merge de nome partido em maiúscula. Doc: [`docs/familias/herois_distincoes.md`](docs/familias/herois_distincoes.md).
 
 *Heróis de Arton — Cap. 4 (Regras Opcionais)* — **CAPÍTULO ~COMPLETO** (304 chunks; índice `herois-arton`
 1084→1388). As **listas entity-like**: **9 Papéis no Grupo** (descrição + benefício mecânico), **54

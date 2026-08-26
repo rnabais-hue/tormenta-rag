@@ -30,7 +30,8 @@ FONTE = "herois-arton"
 VERSAO = "1.1"
 
 SECOES = {"Admissão", "Marca da Distinção", "Poderes da distinção"}
-COL_X = 290  # divisória das 2 colunas
+COL_X = 280  # divisória das 2 colunas (a coluna direita começa em x~289; 290 cortava
+             # linhas de efeito em x289 para a "col 0", embaralhando o grid compacto)
 
 
 def dehyph(s):
@@ -203,9 +204,13 @@ def extrair_distincao(doc, nome, idx_ini, idx_fim, pagina):
             continue
         if role == "power":
             pnome, ptag = payload
-            # nome que quebra em 2+ linhas: continuação começa em minúscula (ex.: "e
-            # infiltração", "para ornitópteros") logo após outra linha-de-poder, sem corpo.
-            if ultima_role == "power" and pnome[:1].islower():
+            # nome que quebra em 2+ linhas: continuação em minúscula (ex.: "e infiltração"),
+            # OU o poder anterior ainda SEM corpo — dois nomes seguidos sem efeito entre eles
+            # = nome partido (ex.: "Postura de Combate:"+"Tomada Furtiva", "Esplendor
+            # Vitorioso"+"Inigualável"). Com COL_X correto, efeito-vazio só ocorre em split.
+            _prev_vazio = ((modo == "marca" and marca["nome"] and not marca["efeito"]) or
+                           (cur_power is not None and not cur_power["efeito"]))
+            if ultima_role == "power" and (pnome[:1].islower() or _prev_vazio):
                 if modo == "marca" and marca["nome"] and not marca["efeito"]:
                     marca["nome"] += " " + pnome
                     ultima_role = "power"; continue

@@ -57,6 +57,7 @@ def chunks_de():
     ida = json.loads((D / "idades_herois.json").read_text(encoding="utf-8"))
     cba = json.loads((D / "combate_avancado_herois.json").read_text(encoding="utf-8"))
     dom = json.loads((D / "dominios_herois.json").read_text(encoding="utf-8"))
+    rms = json.loads((D / "regras_soltas_herois.json").read_text(encoding="utf-8"))
 
     # ---------- Papéis no Grupo ----------
     p0 = pap["pagina"]
@@ -201,14 +202,35 @@ def chunks_de():
                           f"{', '.join(c['nome'] for c in dom['construcoes'])}.",
                           tipo="regra_opcional_lista", regra="Domínios"))
 
-    # ---------- Backlog do capítulo (encolhido) ----------
+    # ---------- Módulos menores: Regras Mais Soltas, Culinária, Exploração ----------
+    SEC_ROT = {"regras_soltas": "Regras Mais Soltas", "culinaria": "Culinária Avançada",
+               "exploracao_masmorras": "Exploração de Masmorras"}
+    for m in rms["modulos"]:
+        rot = SEC_ROT.get(m["subtipo"], m.get("regra", "Regras Opcionais"))
+        texto = f"{rot} — {m['nome']} (regra opcional, {LIVRO}, Cap. 4, pág. {m['pagina']}).\n{m['efeito']}"
+        out.append(base_chunk(f"{rot}: {m['nome']}", f"{rot} > {m['nome']}", m["pagina"], texto,
+                              tipo="regra_opcional", subtipo=m["subtipo"], regra=rot, nome=m["nome"]))
+    for p in rms["pratos"]:
+        texto = f"Prato especial (Culinária Avançada): {p['nome']} ({LIVRO}, Cap. 4, pág. {p['pagina']}).\n{p['descricao']}"
+        out.append(base_chunk(f"Prato Especial: {p['nome']}", f"Culinária Avançada > Pratos > {p['nome']}",
+                              p["pagina"], texto, tipo="prato_especial", nome=p["nome"], regra="Culinária Avançada"))
+    for i in rms["ingredientes"]:
+        texto = f"Ingrediente de culinária: {i['nome']} ({LIVRO}, Cap. 4, pág. {i['pagina']}).\n{i['descricao']}"
+        out.append(base_chunk(f"Ingrediente: {i['nome']}", f"Culinária Avançada > Ingredientes > {i['nome']}",
+                              i["pagina"], texto, tipo="ingrediente_culinaria", nome=i["nome"], regra="Culinária Avançada"))
+    out.append(base_chunk("Lista de Pratos e Ingredientes (Culinária)", "Culinária Avançada > Lista", 307,
+                          f"Pratos Especiais de {LIVRO} (Cap. 4): {', '.join(p['nome'] for p in rms['pratos'])}. "
+                          f"Ingredientes: {', '.join(i['nome'] for i in rms['ingredientes'])}.",
+                          tipo="regra_opcional_lista", regra="Culinária Avançada"))
+
+    # ---------- Backlog do capítulo (mínimo) ----------
     out.append(base_chunk("Backlog do Cap. 4 (Regras Opcionais)", "Backlog", 280,
-        f"Backlog do Cap. 4 (Regras Opcionais) de {LIVRO}: integrados as listas entity-like (Papéis, "
-        f"Complicações, Objetivos, Idades), o Combate Avançado (18 regras + 3 tabelas) e o subsistema "
-        f"Domínios (23 módulos + {dom['total_construcoes']} construções + unidades militares). Ainda NÃO "
-        f"integrados: os módulos menores Regras Mais Soltas (Atributos Variados, Raças Abertas, Devoções "
-        f"Abertas), Culinária Avançada e Exploração de Masmorras; e as tabelas-resumo de custo de Domínios "
-        f"(Terrenos 4-9, Construções 4-10, Eventos Aleatórios 4-13).",
+        f"Backlog do Cap. 4 (Regras Opcionais) de {LIVRO}: praticamente COMPLETO — integrados as listas "
+        f"entity-like (Papéis, Complicações, Objetivos, Idades), Combate Avançado (18 regras + 3 tabelas), "
+        f"o subsistema Domínios (23 módulos + {dom['total_construcoes']} construções + unidades) e os módulos "
+        f"menores (Regras Mais Soltas, Culinária Avançada com {rms['total_pratos']} pratos + "
+        f"{rms['total_ingredientes']} ingredientes, Exploração de Masmorras). Resta apenas: as tabelas-resumo "
+        f"de custo de Domínios (Terrenos 4-9, Construções 4-10, Eventos Aleatórios 4-13), numéricas multi-coluna.",
         tipo="pendencia", nome="Backlog de Regras Opcionais"))
 
     resumo = dict(
@@ -216,6 +238,7 @@ def chunks_de():
         faixas=ida["total_faixas"], mazelas=ida["total_mazelas"],
         combate_regras=cba["total_regras"], combate_tabelas=cba["total_tabelas"],
         dominios_modulos=dom["total_modulos"], construcoes=dom["total_construcoes"],
+        modulos_menores=rms["total_modulos"], pratos=rms["total_pratos"], ingredientes=rms["total_ingredientes"],
         overviews=sum(1 for c in out if c.get("subtipo") == "overview"),
         caixas=sum(1 for c in out if c.get("subtipo") == "caixa"),
         tabelas=sum(1 for c in out if c.get("subtipo") == "tabela"),

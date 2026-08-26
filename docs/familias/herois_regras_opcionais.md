@@ -1,6 +1,7 @@
 # Família estruturada: *Heróis de Arton* — Cap. 4: Regras Opcionais
 
-> **Status: RECORTE SEGURO INTEGRADO** (as listas entity-like do capítulo). 2º livro de
+> **Status: CAPÍTULO ~COMPLETO INTEGRADO** (listas entity-like + Combate Avançado + Domínios +
+> módulos menores; resta só as tabelas-resumo de custo de Domínios). 2º livro de
 > expansão, `fonte="herois-arton"`, `capitulo="regras-opcionais"`. Cap. 4 (págs 280–331) =
 > regras opcionais avulsas + o subsistema Domínios. Prioridade do usuário entre livros: **1 → 3 → 2 → 4**.
 
@@ -42,6 +43,9 @@ deste capítulo:**
 | **Idades Variadas** | 290–293 | `extrair_idades_herois.py` | 7 faixas + 19 mazelas |
 | **Combate Avançado** | 298–306 | `extrair_combate_avancado_herois.py` | 18 regras + 3 tabelas |
 | **Domínios** | 316–329 | `extrair_dominios_herois.py` | 23 módulos + 80 construções + tabela de unidades |
+| **Regras Mais Soltas** | 282–283 | `extrair_regras_soltas_herois.py` | módulos (Atributos/Raças/Devoções Variados/Abertas) |
+| **Culinária Avançada** | 307–311 | `extrair_regras_soltas_herois.py` | módulos + 28 pratos + 20 ingredientes |
+| **Exploração de Masmorras** | 312–315 | `extrair_regras_soltas_herois.py` | 8 módulos procedurais |
 
 Cada extrator gera `dados/<familia>_herois.json` + uma ferramenta de conferência HTML
 (`gerar_<familia>_herois_html.py` → `<familia>_herois.html`, offline). Nenhum toca no índice.
@@ -102,17 +106,31 @@ Tormenta20 (**27/21/16pt** — cuidado: 27pt é cabeçalho de seção, NÃO spla
 (8 colunas) é reconstruída por **GEOMETRIA** (colunas por x do cabeçalho + linhas por banda-y),
 resolvendo o merge ímpar/par do `find_tables`.
 
+### Módulos menores (`extrair_regras_soltas_herois.py`) — fecham o capítulo
+Três seções procedurais, reusando a máquina header-driven do Domínios: **Regras Mais Soltas**
+(282–283: Atributos Variados, Raças Abertas, Devoções Abertas), **Culinária Avançada** (307–311:
+Fabricando + **28 Pratos Especiais** `prato_especial` c/ efeito + **20 Ingredientes**
+`ingrediente_culinaria` + os poderes Ás da Cozinha/Bom de Garfo), **Exploração de Masmorras**
+(312–315: Percorrendo a Masmorra, Encontros Aleatórios, Luz & Escuridão, Ruídos & Barulho,
+Gerenciamento de Recursos, Duração de Cenas, Sobrevivência em Masmorras). Achados: subtítulo
+**16pt DOBRA no módulo pai** (senão criaria chunks "Khalmyr"/"Valkaria" que colidem com os
+deuses); triggers de entidade por **match EXATO** (`ingredientes`/`pratos especiais`, senão
+"Fabricando Pratos Especiais" dispararia o modo cedo); splash de seção ≥40pt entra no buffer;
+o módulo de intro é pré-inicializado (no fluxo de 2 colunas o splash + eixos Complexidade/
+Desequilíbrio/Clima vêm ANTES do título "Regras Mais Soltas").
+
 ## 2. Integração (`integrar_regras_opcionais_herois.py`)
 
 Aditivo, `fonte="herois-arton"`, `capitulo="regras-opcionais"`, **idempotência estreita**
 (remove só chunks desse capítulo; recomputa `meta["fontes"]`; embute só os vetores novos).
-**237 chunks:** 6 overviews + 9 papéis + 54 complicações + 7 objetivos + 7 faixas + 19 mazelas
-+ 18 regras de combate + 23 módulos de domínio + 80 construções + 4 tabelas + 3 caixas + 6 listas
-+ 1 backlog. Metadados por chunk (`categoria`/`classe`/`voto`, `modificadores`, `idade`, `subtipo`)
-ficam filtráveis mesmo sem `detectar_filtro_*` dedicado (a busca vetorial já resolve — ver §3).
+**304 chunks:** 6 overviews + 9 papéis + 54 complicações + 7 objetivos + 7 faixas + 19 mazelas
++ 18 regras de combate + 23 módulos de domínio + 80 construções + 18 módulos menores + 28 pratos
++ 20 ingredientes + 4 tabelas + 3 caixas + 7 listas + 1 backlog. Metadados por chunk
+(`categoria`/`classe`/`voto`, `modificadores`, `idade`, `subtipo`) ficam filtráveis mesmo sem
+`detectar_filtro_*` dedicado (a busca vetorial já resolve — ver §3).
 
-Índice: **2959 → 3067 → 3196 chunks** (`nucleo` 1498 + `ameacas-arton` 377 + `herois-arton` 1321).
-`herois-arton`: Cap1 664 + Arsenal 205 + Distinções 215 + **Regras Opcionais 237**.
+Índice: **2959 → 3067 → 3196 → 3263 chunks** (`nucleo` 1498 + `ameacas-arton` 377 + `herois-arton` 1388).
+`herois-arton`: Cap1 664 + Arsenal 205 + Distinções 215 + **Regras Opcionais 304**.
 
 Uso:
 ```
@@ -122,6 +140,7 @@ python extrair_objetivos_herois.py && python gerar_objetivos_herois_html.py
 python extrair_idades_herois.py && python gerar_idades_herois_html.py
 python extrair_combate_avancado_herois.py && python gerar_combate_avancado_herois_html.py
 python extrair_dominios_herois.py && python gerar_dominios_herois_html.py
+python extrair_regras_soltas_herois.py && python gerar_regras_soltas_herois_html.py
 python integrar_regras_opcionais_herois.py
 ```
 
@@ -129,19 +148,16 @@ Efeito medido (recuperação vetorial pura, top-1): "papel de xerife" → Xerife
 "preparação litúrgica do clérigo" → rank 1 c/ classe; "modificadores de criança" → faixa rank 1;
 "objetivos heroicos" → overview rank 1; "ataques de oportunidade" → Combate Avançado rank 1;
 "tornar-se regente" → Domínios rank 1 (0,77); "construção biblioteca" → rank 1; "tabela de falhas
-críticas" → rank 1.
+críticas" → rank 1; "prato Banquete dos Heróis" → rank 1; "gerenciamento de recursos em masmorras"
+→ rank 1 (0,71); "devoções abertas" → rank 1; "ingrediente Gorad" → rank 1.
 
-## 3. BACKLOG (não integrado) — restante do Cap. 4
+## 3. BACKLOG (não integrado) — CAPÍTULO ~COMPLETO
 
-Há um chunk `tipo="pendencia"` no índice registrando o que falta. Já foram integrados: as listas
-entity-like, **Combate Avançado** (18 regras + 3 tabelas) e o subsistema **Domínios** (23 módulos +
-80 construções + unidades). Ainda NÃO integrados (menor prioridade):
+O Cap. 4 está praticamente todo integrado: listas entity-like, **Combate Avançado**, **Domínios**
+e os **módulos menores** (Regras Mais Soltas, Culinária Avançada com 28 pratos + 20 ingredientes,
+Exploração de Masmorras). O chunk `tipo="pendencia"` registra o único resíduo:
 
-- **Regras Mais Soltas** (282–283): Atributos Variados, Raças Abertas, Devoções Abertas.
-- **Culinária Avançada** (307–311): Fabricando Pratos Especiais, Ingredientes, Novos Poderes.
-- **Exploração de Masmorras** (312–315): encontros/luz/ruído/recursos/sobrevivência.
 - **Tabelas-resumo de custo de Domínios**: Terrenos (Tabela 4-9), Construções (4-10) e Eventos
-  Aleatórios (4-13) — numéricas multi-coluna, precisam do mesmo refino que a Acertos Críticos.
-
-**Próximo passo natural:** os 3 módulos procedurais menores (Regras Mais Soltas, Culinária,
-Exploração) — cada regra = 1 chunk `tipo="regra_opcional"`, reusando a máquina deste extrator.
+  Aleatórios (4-13) — numéricas multi-coluna, precisam do mesmo refino que a Acertos Críticos
+  (parser por MIDPOINT / geometria). Não impedem o uso: as construções/regras já trazem custos no
+  texto; estas tabelas são só o resumo consolidado.

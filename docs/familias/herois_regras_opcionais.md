@@ -100,7 +100,8 @@ Subsistema de regência. **23 módulos procedurais** (Tornando-se Regente +Crian
 Características: Níveis/Terreno/Corte/Popularidade/Fortificações; Turnos de Domínio Etapas 1–3;
 Domínios Místicos; Eventos Aleatórios: Resolvendo/Batalhas/Revoltas) + **80 Construções**
 (`construcao_dominio`: nome = rótulo negrito terminando em "." + descrição/efeito; lista A→Z) +
-a **Tabela 4-11 de Unidades Militares** (6 tropas). Máquina de estados dirigida por cabeçalhos
+as **4 tabelas** (Unidades Militares 4-11 c/ 6 tropas + as de custo Terrenos 4-9, Construções 4-10,
+Eventos Aleatórios 4-13). Máquina de estados dirigida por cabeçalhos
 Tormenta20 (**27/21/16pt** — cuidado: 27pt é cabeçalho de seção, NÃO splash; splash/drop-cap só
 ≥40pt) com buffer flush-no-corpo (separa título partido de seções distintas). A tabela de unidades
 (8 colunas) é reconstruída por **GEOMETRIA** (colunas por x do cabeçalho + linhas por banda-y),
@@ -123,14 +124,13 @@ Desequilíbrio/Clima vêm ANTES do título "Regras Mais Soltas").
 
 Aditivo, `fonte="herois-arton"`, `capitulo="regras-opcionais"`, **idempotência estreita**
 (remove só chunks desse capítulo; recomputa `meta["fontes"]`; embute só os vetores novos).
-**304 chunks:** 6 overviews + 9 papéis + 54 complicações + 7 objetivos + 7 faixas + 19 mazelas
+**307 chunks:** 6 overviews + 9 papéis + 54 complicações + 7 objetivos + 7 faixas + 19 mazelas
 + 18 regras de combate + 23 módulos de domínio + 80 construções + 18 módulos menores + 28 pratos
-+ 20 ingredientes + 4 tabelas + 3 caixas + 7 listas + 1 backlog. Metadados por chunk
-(`categoria`/`classe`/`voto`, `modificadores`, `idade`, `subtipo`) ficam filtráveis mesmo sem
-`detectar_filtro_*` dedicado (a busca vetorial já resolve — ver §3).
++ 20 ingredientes + **7 tabelas** (3 de Combate Avançado + Unidades 4-11 + Terrenos/Construções/
+Eventos de custo) + 3 caixas + 7 listas + 1 chunk-marca. Metadados por chunk (`categoria`/`classe`/
+`voto`, `modificadores`, `idade`, `subtipo`) ficam filtráveis mesmo sem `detectar_filtro_*` dedicado.
 
-Índice: **2959 → 3067 → 3196 → 3263 chunks** (`nucleo` 1498 + `ameacas-arton` 377 + `herois-arton` 1388).
-`herois-arton`: Cap1 664 + Arsenal 205 + Distinções 215 + **Regras Opcionais 304**.
+`herois-arton`: Cap1 664 + Arsenal (205 + Mágico 241 + Menor 80) + Distinções 230 + **Regras Opcionais 307**.
 
 Uso:
 ```
@@ -151,13 +151,14 @@ Efeito medido (recuperação vetorial pura, top-1): "papel de xerife" → Xerife
 críticas" → rank 1; "prato Banquete dos Heróis" → rank 1; "gerenciamento de recursos em masmorras"
 → rank 1 (0,71); "devoções abertas" → rank 1; "ingrediente Gorad" → rank 1.
 
-## 3. BACKLOG (não integrado) — CAPÍTULO ~COMPLETO
+## 3. CAPÍTULO 4 — COMPLETO (sem pendências)
 
-O Cap. 4 está praticamente todo integrado: listas entity-like, **Combate Avançado**, **Domínios**
-e os **módulos menores** (Regras Mais Soltas, Culinária Avançada com 28 pratos + 20 ingredientes,
-Exploração de Masmorras). O chunk `tipo="pendencia"` registra o único resíduo:
+Todo o Cap. 4 está integrado: listas entity-like, **Combate Avançado** (18 regras + 3 tabelas),
+**Domínios** (23 módulos + 80 construções + **4 tabelas**: Unidades 4-11 + as de custo Terrenos
+4-9, Construções 4-10, Eventos Aleatórios 4-13) e os **módulos menores** (Regras Mais Soltas,
+Culinária com 28 pratos + 20 ingredientes, Exploração de Masmorras).
 
-- **Tabelas-resumo de custo de Domínios**: Terrenos (Tabela 4-9), Construções (4-10) e Eventos
-  Aleatórios (4-13) — numéricas multi-coluna, precisam do mesmo refino que a Acertos Críticos
-  (parser por MIDPOINT / geometria). Não impedem o uso: as construções/regras já trazem custos no
-  texto; estas tabelas são só o resumo consolidado.
+As 3 tabelas de custo de Domínios foram reconstruídas por **geometria** (`_tabela_geometrica`
+em `extrair_dominios_herois.py`): colunas pelas posições-x do cabeçalho **com cluster das linhas
+empilhadas** (ex.: "Nível"/"Máximo" no mesmo x → "Nível Máximo"; threshold 20px p/ não fundir
+colunas distintas da tabela de Unidades de 8 colunas), linhas por banda-y. Nada pendente no Cap. 4.

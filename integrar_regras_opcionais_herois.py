@@ -197,6 +197,12 @@ def chunks_de():
                               tu["pagina"], f"Unidades Militares de domínio ({LIVRO}, Cap. 4, pág. {tu['pagina']}). "
                               f"Colunas: {', '.join(tu['colunas'])}.\n{corpo}",
                               tipo="regra_opcional", subtipo="tabela", regra="Domínios", nome="Unidades Militares"))
+    for tc in dom.get("tabelas_custo", []):
+        corpo = "\n".join(tc["linhas"])
+        out.append(base_chunk(f"Domínios: {tc['nome']}", f"Domínios > {tc['nome']}", tc["pagina"],
+                              f"Tabela de domínio: {tc['nome']} ({LIVRO}, Cap. 4, pág. {tc['pagina']}). "
+                              f"Colunas: {', '.join(tc['colunas'])}.\n{corpo}",
+                              tipo="regra_opcional", subtipo="tabela", regra="Domínios", nome=tc["nome"]))
     out.append(base_chunk("Lista das Construções de Domínio", "Domínios > Construções > Lista", dp,
                           f"As {dom['total_construcoes']} Construções de domínio de {LIVRO} (Cap. 4): "
                           f"{', '.join(c['nome'] for c in dom['construcoes'])}.",
@@ -223,15 +229,16 @@ def chunks_de():
                           f"Ingredientes: {', '.join(i['nome'] for i in rms['ingredientes'])}.",
                           tipo="regra_opcional_lista", regra="Culinária Avançada"))
 
-    # ---------- Backlog do capítulo (mínimo) ----------
-    out.append(base_chunk("Backlog do Cap. 4 (Regras Opcionais)", "Backlog", 280,
-        f"Backlog do Cap. 4 (Regras Opcionais) de {LIVRO}: praticamente COMPLETO — integrados as listas "
-        f"entity-like (Papéis, Complicações, Objetivos, Idades), Combate Avançado (18 regras + 3 tabelas), "
-        f"o subsistema Domínios (23 módulos + {dom['total_construcoes']} construções + unidades) e os módulos "
-        f"menores (Regras Mais Soltas, Culinária Avançada com {rms['total_pratos']} pratos + "
-        f"{rms['total_ingredientes']} ingredientes, Exploração de Masmorras). Resta apenas: as tabelas-resumo "
-        f"de custo de Domínios (Terrenos 4-9, Construções 4-10, Eventos Aleatórios 4-13), numéricas multi-coluna.",
-        tipo="pendencia", nome="Backlog de Regras Opcionais"))
+    # ---------- Cap. 4 COMPLETO ----------
+    ntc = len(dom.get("tabelas_custo", []))
+    out.append(base_chunk("Cap. 4 (Regras Opcionais) — COMPLETO", "Backlog", 280,
+        f"Cap. 4 (Regras Opcionais) de {LIVRO}: COMPLETO. Integrados as listas entity-like (Papéis, Complicações, "
+        f"Objetivos, Idades), Combate Avançado (18 regras + 3 tabelas), o subsistema Domínios (23 módulos + "
+        f"{dom['total_construcoes']} construções + unidades + {ntc} tabelas de custo: Terrenos 4-9, Construções "
+        f"4-10, Eventos Aleatórios 4-13) e os módulos menores (Regras Mais Soltas, Culinária Avançada com "
+        f"{rms['total_pratos']} pratos + {rms['total_ingredientes']} ingredientes, Exploração de Masmorras). "
+        f"Nada pendente neste capítulo.",
+        tipo="pendencia", nome="Cap. 4 Regras Opcionais COMPLETO"))
 
     resumo = dict(
         papeis=pap["total"], complicacoes=com["total"], objetivos=obj["total"],

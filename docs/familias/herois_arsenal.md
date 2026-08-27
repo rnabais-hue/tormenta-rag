@@ -1,10 +1,11 @@
-# Heróis de Arton — Capítulo 3: Arsenal dos Heróis (parcial seguro)
+# Heróis de Arton — Capítulo 3: Arsenal dos Heróis (COMPLETO)
 
-`fonte="herois-arton"` · `capitulo="arsenal"` · págs 216–279 · versão 1.1
+`fonte="herois-arton"` · págs 216–279 · versão 1.1 · **3 capítulos-de-integração:**
+`capitulo="arsenal"` (Novos Equipamentos), `capitulo="arsenal-magico"` (Magias/Artefatos/
+Itens Mágicos), `capitulo="arsenal-menor"` (Melhorias/Capangas/Veículos/Bases).
 
-Extração estruturada dos **Novos Equipamentos** do Cap. 3. Integrado ao índice o
-**recorte seguro** (validado); o restante do capítulo está registrado como pendência
-(inclusive um chunk `tipo="pendencia"` no próprio índice).
+**Cap. 3 COMPLETO.** Extração estruturada de todo o Arsenal em três rodadas de integração,
+cada uma com idempotência estreita própria (por `capitulo`).
 
 ## Pipeline
 
@@ -55,12 +56,23 @@ encanto_acessorios 8, acessorios_especifico 64, maldicao_armas 14, maldicao_arma
 Regras procedurais: Itens Inteligentes, Criando um Item Mágico Inteligente, Ego, Itens
 Amaldiçoados, Removendo Maldições. `gerar_arsenal_magico_html.py` = conferência combinada.
 
-## Pendências do Arsenal (NÃO integradas — sub-backlog menor)
+## Arsenal Menor — INTEGRADO (3ª rodada; `capitulo="arsenal-menor"`, 80 chunks)
 
-1. **Itens Superiores / Novas Melhorias** (Tabela 3-5)
-2. **Capangas** (tipos de capanga/mercenário para contratar — tabela)
-3. **Veículos** (características + lista + os **5 veículos do catálogo de itens gerais** — tabela)
-4. **Bases** (subseção adiada por decisão do usuário)
+Fecha o Cap. 3, em `extrair_arsenal_menor_herois.py` (reusa a máquina header-driven do
+`itens_magicos`) + `integrar_arsenal_menor_herois.py`:
+
+| Sub-parte | Registros | Tipo | Método |
+|---|---|---|---|
+| **Novas Melhorias** de item | 12 | `melhoria_item` | rótulo negrito-"." + descrição |
+| **Capangas** (grupos p/ contratar) | 6 | `capanga` | idem |
+| **Veículos** | 5 | `veiculo` | idem ("Animais de Tração" ficou no módulo Jogando com Veículos) |
+| **Cômodos** de Base | 41 | `comodo_base` | idem |
+| **Módulos procedurais** | 11 | `regra_opcional` | Itens Superiores, Capangas Convocados, regras de Veículos e de Bases (Adquirindo/Características/Tipos/Porte/Segurança/Manutenção) |
+| **Mobílias** (Tabela 3-8) | 25 | `mobilia_lista` | geometria 2-col; nome de 2 linhas juntado por continuação minúscula |
+
+Achado: **flush de cabeçalho entre níveis** (27→21pt) para não fundir "Itens Superiores"
+(intro) com "Novas Melhorias" (lista). **CAP. 3 100% integrado** (só o núcleo/edição-base
+não repete estas seções). Bases deixou de ser adiada.
 
 Follow-up técnico: incluir o equipamento de Heróis no filtro híbrido
 `detectar_filtro_equipamento()` de `perguntar.py`.

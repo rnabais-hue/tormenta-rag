@@ -39,17 +39,17 @@ Tormenta20 sz~58 + drop-cap). Estrutura interna, guiada por tipografia:
 - `integrar_distincoes_herois.py` — embute e adiciona ao FAISS. **Idempotência ESTREITA**
   (`capitulo=="distincoes"`; não toca em Cap 1/Arsenal/núcleo). Recomputa `meta["fontes"]`.
 
-## Integrado (recorte seguro — 215 chunks; `herois-arton` 869→1084; índice 2744→2959)
+## Integrado (COMPLETO — 230 chunks; `capitulo="distincoes"`)
 
 | Tipo | Qtd | Conteúdo |
 |---|---|---|
 | `distincao` (overview) | 36 | conceito + admissão + marca + lista de poderes |
-| `distincao_poder` | 177 | poderes com efeito limpo (≥40 chars) |
+| `distincao_poder` | 192 | **todos** os poderes com efeito limpo (≥40 chars) |
 | `distincao_lista` | 1 | lista das 36 distinções |
-| `pendencia` (backlog) | 1 | os 18 poderes de efeito fino |
+| `pendencia` | 1 | chunk-marca (0 finos — backlog resolvido) |
 
-Validação E2E: `faiss==chunks==meta==2959`; overviews/poderes rank-1 (Amazona, Aeronauta
-Goblin por descrição semântica); backlog recuperável; regressão núcleo (Fatigado) + Cap 1
+Validação E2E: overviews/poderes rank-1 (Amazona, Aeronauta Goblin; e os antes-finos Caminhar
+do Dragão, Postura de Combate, Sentidos do Tigre); regressão núcleo (Fatigado) + Cap 1
 (Sátiro) + Arsenal (Montante cinético) OK. Nota: nomes próprios que colidem com lore do
 núcleo (Smokestone-cidade, "Tormenta") podem rankear o chunk do núcleo primeiro — os
 chunks de distinção existem e aparecem com k maior.

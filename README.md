@@ -436,8 +436,8 @@ registrado em [`fontes.py`](fontes.py) (`nucleo`, `ameacas-arton`, `herois-arton
 livro:** todo `extrair_/integrar_` novo carimba a sua `fonte` + `pagina`; expansões
 que repetem/variam/estendem uma entidade do núcleo devem ser registros próprios com
 `fonte` distinta (e, quando fizer sentido, um campo de vínculo à entidade-base) — nunca
-sobrescrever silenciosamente o chunk do núcleo. Índice atual (3519 chunks): `nucleo` 1498 +
-`ameacas-arton` 377 + `herois-arton` 1644 (Cap 1: 664 + Arsenal: 205 + Arsenal Mágico: 241 + Distinções: 230 + Regras Opcionais: 304).
+sobrescrever silenciosamente o chunk do núcleo. Índice atual (3602 chunks): `nucleo` 1498 +
+`ameacas-arton` 377 + `herois-arton` 1727 (Cap 1: 664 + Arsenal: 205 + Arsenal Mágico: 241 + Arsenal Menor: 80 + Distinções: 230 + Regras Opcionais: 307).
 
 **Expansão multi-livro — EM CURSO.**
 
@@ -451,18 +451,15 @@ Novos Poderes (classe + gerais), classe Treinador (+pet), 14 Classes Variantes, 
 6 Tabelas para Personagens. 664 chunks. Layout IowanOldStyle (não SourceSansPro).
 Doc: [`docs/familias/herois_campeoes.md`](docs/familias/herois_campeoes.md).
 
-*Heróis de Arton — Cap. 3 (Arsenal)* — **PARCIAL SEGURO INTEGRADO** (205 chunks; índice `herois-arton`
-664→869). Novos Equipamentos validados: 39 armas + 5 munições especiais + 14 armaduras/escudos + 128
-itens gerais (14 subcategorias, menos os 5 veículos-de-catálogo sem descrição) + 2 habilidades de arma,
-com 16 listas de recuperação. Parser de tabela por posição-x (robusto a linhas fundidas do `find_tables`).
-**2ª rodada — ARSENAL MÁGICO INTEGRADO** (+241 chunks; `capitulo="arsenal-magico"`; índice `herois-arton`
-1388→1629): **22 Novas Magias Arcanas** (stat block + aprimoramentos, reusa o schema do núcleo), **8
-Artefatos** e **202 Novos Itens Mágicos** em 11 categorias (encantos/específicos/maldições, padrão rótulo-bold
-como as construções) + 5 regras (Itens Inteligentes/Amaldiçoados). Recuperação rank-1 (Aura de Morte, encanto
-Alvorada, Armadura de Crânio Negro, Anel da Proteção Mental 0,74, maldição Preguiçosa, Ego). **Sub-backlog
-restante (chunk `tipo="pendencia"`):** Itens Superiores/Novas Melhorias, Capangas, Veículos (+5 do catálogo),
-Bases (adiada). Follow-up: incluir o equipamento de Heróis em `detectar_filtro_equipamento()`.
-Doc: [`docs/familias/herois_arsenal.md`](docs/familias/herois_arsenal.md).
+*Heróis de Arton — Cap. 3 (Arsenal)* — **COMPLETO** (526 chunks em 3 rodadas). **1ª — Novos Equipamentos**
+(`capitulo="arsenal"`, 205 chunks): 39 armas + 5 munições + 14 armaduras/escudos + 128 itens gerais + 2
+habilidades de arma + 16 listas (parser de tabela por posição-x). **2ª — Arsenal Mágico** (`capitulo=
+"arsenal-magico"`, 241 chunks): **22 Novas Magias Arcanas** (stat block + aprimoramentos, reusa o schema do
+núcleo), **8 Artefatos** e **202 Novos Itens Mágicos** em 11 categorias (encantos/específicos/maldições) + 5
+regras. **3ª — Arsenal Menor** (`capitulo="arsenal-menor"`, 80 chunks): 12 Novas Melhorias + 6 Capangas + 5
+Veículos + 41 Cômodos de Base + 11 módulos (Bases/Veículos/Capangas) + 25 Mobílias (Tabela 3-8). Recuperação
+rank-1 (Aura de Morte, Armadura de Crânio Negro, Anel da Proteção Mental 0,74, melhoria Farpada, cômodo
+Laboratório Arcano, Dirigível Goblin). Doc: [`docs/familias/herois_arsenal.md`](docs/familias/herois_arsenal.md).
 
 *Heróis de Arton — Cap. 2 (Distinções)* — **COMPLETO** (230 chunks, `capitulo="distincoes"`).
 **36 Distinções** (entidade NOVA): 1 overview cada (conceito + Admissão/requisito + Marca da Distinção + lista
@@ -472,19 +469,20 @@ segmentação por **página de splash** (o TOC aponta para a página mecânica, 
 compacto foram consertados — causa-raiz era `COL_X` (a coluna direita começa em x≈289; o corte em 290 roubava
 linhas do efeito) + merge de nome partido em maiúscula. Doc: [`docs/familias/herois_distincoes.md`](docs/familias/herois_distincoes.md).
 
-*Heróis de Arton — Cap. 4 (Regras Opcionais)* — **CAPÍTULO ~COMPLETO** (304 chunks; índice `herois-arton`
-1084→1388). As **listas entity-like**: **9 Papéis no Grupo** (descrição + benefício mecânico), **54
+*Heróis de Arton — Cap. 4 (Regras Opcionais)* — **COMPLETO** (307 chunks, `capitulo="regras-opcionais"`).
+As **listas entity-like**: **9 Papéis no Grupo** (descrição + benefício mecânico), **54
 Complicações** (32 gerais + 22 de classe, flag `voto`/† + classe), **7 Objetivos Heroicos** (Benefício/
 Penalidade/Conclusão), **Idades Variadas** (7 faixas c/ modificadores + traços, + 19 mazelas). E os **módulos
 procedurais**: **Combate Avançado** (18 regras opcionais + 3 tabelas Acertos Críticos/Teste de Morte/Falhas
-Críticas) e o subsistema **Domínios** (23 módulos de regência + 80 Construções + tabela de Unidades Militares).
+Críticas) e o subsistema **Domínios** (23 módulos de regência + 80 Construções + 4 tabelas: Unidades 4-11 +
+Terrenos 4-9/Construções 4-10/Eventos 4-13 de custo).
 Descobertas de layout REUSÁVEIS: **detecção de caixas via `get_drawings()`** (separa tabela-embutida/sidebar do
 fluxo da coluna; banner de título span ≥24pt não é caixa); helper `juntar()` (fluxo linha-a-linha); **parser de
 tabela numerada por MIDPOINT** (número d% centrado no bloco do efeito → reconstrói d%→efeito) e **reconstrução
 de tabela por geometria** (colunas por x + linhas por banda-y) — ambos contornam o merge ímpar/par do
-`find_tables`. Fechado com os **módulos menores**: Regras Mais Soltas (Atributos/Raças/Devoções), Culinária Avançada
-(28 pratos + 20 ingredientes) e Exploração de Masmorras (8 módulos). **Backlog residual (chunk `tipo="pendencia"`):**
-apenas as tabelas-resumo de custo de Domínios (Terrenos 4-9, Construções 4-10, Eventos 4-13). Doc: [`docs/familias/herois_regras_opcionais.md`](docs/familias/herois_regras_opcionais.md).
+`find_tables`. Fechado com os **módulos menores** (Regras Mais Soltas, Culinária Avançada com 28 pratos + 20 ingredientes,
+Exploração de Masmorras) e as **tabelas de custo de Domínios** (geometria com cluster de cabeçalho empilhado).
+**Cap. 4 COMPLETO, sem pendências.** Doc: [`docs/familias/herois_regras_opcionais.md`](docs/familias/herois_regras_opcionais.md).
 
 | Família | Nº | Filtro híbrido em `perguntar.py` |
 |---|---|---|
@@ -504,7 +502,9 @@ apenas as tabelas-resumo de custo de Domínios (Terrenos 4-9, Construções 4-10
 | Mundo de Arton / Geografia (Capítulo 9) | 30 (+3 listas, +1 linha do tempo) | reino / região / lugar / potência (`detectar_filtro_mundo_arton`) — doc em `docs/familias/mundo_arton.md` |
 | Recompensas / Itens Mágicos (Capítulo 8) | 104 (encantos, específicos, acessórios, 7 artefatos) | encanto / item / acessório / artefato / regra (`detectar_filtro_recompensa`) — doc em `docs/familias/recompensas.md` |
 | Fichas das 14 Classes + O Mestre (Caps. 1 e 6) | 22 (14 fichas + 8 regras) | ficha/progressão de classe e regras do Mestre (`detectar_filtro_classe_progressao` / `detectar_filtro_mestre`) — doc em `docs/familias/mestre_classes.md` |
-| Regras Opcionais — Heróis Cap. 4 (~completo) | 304 chunks (9 papéis + 54 complicações + 7 objetivos + 7 faixas + 19 mazelas + 18 regras de combate + 3 tabelas + 23 módulos de domínio + 80 construções + unidades + 18 módulos menores + 28 pratos + 20 ingredientes) | — (metadados `categoria`/`classe`/`voto`/`modificadores`/`subtipo` filtráveis; busca vetorial) — doc em `docs/familias/herois_regras_opcionais.md` |
+| Regras Opcionais — Heróis Cap. 4 (COMPLETO) | 307 chunks (9 papéis + 54 complicações + 7 objetivos + 7 faixas + 19 mazelas + 18 regras de combate + 23 módulos de domínio + 80 construções + 18 módulos menores + 28 pratos + 20 ingredientes + 7 tabelas + listas) | — (metadados `categoria`/`classe`/`voto`/`modificadores`/`subtipo` filtráveis; busca vetorial) — doc em `docs/familias/herois_regras_opcionais.md` |
+| Arsenal — Heróis Cap. 3 (COMPLETO) | 526 chunks (Equipamentos 205 + Mágico: 22 magias/8 artefatos/202 itens mágicos = 241 + Menor: 12 melhorias/6 capangas/5 veículos/41 cômodos/25 mobílias = 80) | filtro de equipamento (`detectar_filtro_equipamento`, núcleo; follow-up: incluir Heróis) — doc em `docs/familias/herois_arsenal.md` |
+| Distinções — Heróis Cap. 2 (COMPLETO) | 230 chunks (36 distinções + 192 poderes + lista) | — (busca vetorial) — doc em `docs/familias/herois_distincoes.md` |
 
 Índice atual: **~1498 chunks** (1165 brutos + estruturados − textos corridos
 substituídos). ⚠️ Cuidado com a **ordem de re-run** dos integradores (ver a nota nos

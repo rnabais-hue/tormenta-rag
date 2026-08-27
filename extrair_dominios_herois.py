@@ -127,16 +127,36 @@ def extrair_tabela_unidades(doc):
                                   bool(s["flags"] & (2**4)) or "Bold" in s["font"]))
     if not spans:
         return None
-    # cabeçalho = 1ª banda-y (spans em negrito no topo) → define colunas (nome,x)
-    spans.sort()
+    col_nm, out = _tabela_geometrica([(s[0], s[1], s[2]) for s in spans])
+    return {"nome": "Unidades Militares (Tabela 4-11)", "pagina": 325,
+            "colunas": col_nm, "linhas": out}
+
+
+def _tabela_geometrica(spans):
+    """Reconstrói uma tabela (spans = [(y, x, texto)]) por GEOMETRIA: colunas pelas
+    posições-x do cabeçalho (1ª banda-y), linhas por banda-y (gap > 8pt), cada span
+    na coluna de x mais próximo. Contorna o merge ímpar/par do find_tables."""
+    if not spans:
+        return [], []
+    spans = sorted(spans)
     y_head = spans[0][0]
-    cols = sorted([(sx, tx) for (sy, sx, tx, bd) in spans if abs(sy - y_head) < 6], key=lambda c: c[0])
-    col_x = [c[0] for c in cols]
-    col_nm = [c[1] for c in cols]
-    # linhas de dados: agrupa por banda-y (novo grupo quando o gap > 8pt)
-    dados = [s for s in spans if s[0] > y_head + 6]
+    # cabeçalho pode ter 2 linhas empilhadas ("Nível"/"Máximo") → banda maior + cluster por x
+    head = [(sx, sy, tx) for (sy, sx, tx) in spans if sy < y_head + 16]
+    grupos = []
+    for sx, sy, tx in sorted(head, key=lambda h: h[0]):
+        g = next((g for g in grupos if abs(g["x"] - sx) < 20), None)  # só junta linhas EMPILHADAS (mesmo x)
+        if g:
+            g["spans"].append((sy, tx)); g["x"] = min(g["x"], sx)
+        else:
+            grupos.append({"x": sx, "spans": [(sy, tx)]})
+    grupos.sort(key=lambda g: g["x"])
+    col_x = [g["x"] for g in grupos]
+    col_nm = [" ".join(tx for _, tx in sorted(g["spans"])) for g in grupos]
+    if not col_x:
+        return [], []
+    dados = [s for s in spans if s[0] > y_head + 16]
     linhas, atual, last_y = [], [], None
-    for (sy, sx, tx, bd) in dados:
+    for (sy, sx, tx) in dados:
         if last_y is not None and sy - last_y > 8:
             linhas.append(atual); atual = []
         atual.append((sx, tx)); last_y = sy
@@ -150,8 +170,44 @@ def extrair_tabela_unidades(doc):
             cells[j] = (cells[j] + " " + tx).strip()
         if any(cells):
             out.append(" | ".join(f"{col_nm[i]}: {cells[i]}" for i in range(len(cells)) if cells[i]))
-    return {"nome": "Unidades Militares (Tabela 4-11)", "pagina": 325,
-            "colunas": col_nm, "linhas": out}
+    return col_nm, out
+
+
+def _spans_bbox(page, bbox):
+    x0, y0, x1, y1 = bbox
+    sps = []
+    for b in page.get_text("dict")["blocks"]:
+        if b.get("type") != 0:
+            continue
+        for l in b["lines"]:
+            for s in l["spans"]:
+                sx, sy = s["bbox"][0], s["bbox"][1]
+                if x0 - 2 <= sx <= x1 + 2 and y0 - 2 <= sy <= y1 + 2 and s["text"].strip():
+                    sps.append((round(sy, 1), sx, s["text"].strip()))
+    return sps
+
+
+def extrair_tabelas_custo(doc):
+    """Tabelas-resumo de custo: Terrenos (4-9, p318), Construções (4-10, p320–321),
+    Eventos Aleatórios (4-13, p328) — reconstruídas por geometria."""
+    tabs = []
+    for nome, pno in [("Terrenos (Tabela 4-9)", 318), ("Eventos Aleatórios (Tabela 4-13)", 328)]:
+        page = doc[pno - 1]
+        t = next((t for t in page.find_tables().tables if t.row_count >= 8), None)
+        if t:
+            cn, ln = _tabela_geometrica(_spans_bbox(page, t.bbox))
+            tabs.append({"nome": nome, "pagina": pno, "colunas": cn, "linhas": ln})
+    cn0, ln0 = [], []
+    for pno in (320, 321):
+        page = doc[pno - 1]
+        t = next((t for t in page.find_tables().tables if t.row_count >= 8), None)
+        if t:
+            cn, ln = _tabela_geometrica(_spans_bbox(page, t.bbox))
+            if not cn0:
+                cn0 = cn
+            ln0 += ln
+    tabs.append({"nome": "Construções (Tabela 4-10)", "pagina": 320, "colunas": cn0, "linhas": ln0})
+    return tabs
 
 
 def main():
@@ -236,20 +292,20 @@ def main():
     flush_hdr(PG_FIM); fecha_pred(); fecha_mod()
 
     tabela = extrair_tabela_unidades(doc)
+    tabelas_custo = extrair_tabelas_custo(doc)
 
     banco = {
         "fonte": FONTE, "livro": "Heróis de Arton", "secao": "Domínios", "pagina": PG_INI,
         "total_modulos": len(modulos), "total_construcoes": len(construcoes),
         "modulos": modulos, "construcoes": construcoes,
-        "tabela_unidades": tabela,
+        "tabela_unidades": tabela, "tabelas_custo": tabelas_custo,
     }
     OUT.write_text(json.dumps(banco, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"{len(modulos)} módulos + {len(construcoes)} construções -> {OUT.name}\n")
-    for m in modulos:
-        print(f"  MOD {m['nome']:<28} pg{m['pagina']} | {len(m['efeito']):>4}c")
-    print(f"\n  construções ({len(construcoes)}):", ", ".join(c["nome"] for c in construcoes))
     if tabela:
-        print(f"\n  TABELA {tabela['nome']}: {len(tabela['linhas'])} linhas | cols={tabela['colunas']}")
+        print(f"  TABELA {tabela['nome']}: {len(tabela['linhas'])} linhas")
+    for tc in tabelas_custo:
+        print(f"  TABELA {tc['nome']}: {len(tc['linhas'])} linhas | cols={tc['colunas']}")
 
 
 if __name__ == "__main__":

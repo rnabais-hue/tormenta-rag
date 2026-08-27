@@ -293,15 +293,21 @@ def campos_e_habilidades(items, tipo_txt):
         cur_kind = cur_label = cur_titulo = None
         cur_txt = []
 
+    labels_vistos = set()
     for it in items:
         txt = it["t"]
         label = it["label"]
         bp = it["bold_prefix"]
-        if label:
+        # Só abre bloco novo para um rótulo AINDA NÃO VISTO. Uma linha de prosa que só
+        # começa com a palavra "Defesa"/"Deslocamento" (continuação de resistências que
+        # quebra de linha) NÃO deve reabrir o campo e sobrescrever o valor real — vira
+        # continuação do bloco corrente (mantém a 1ª ocorrência, com o número).
+        if label and label not in labels_vistos:
             flush()
             cur_kind = "campo"
             cur_label = label
             cur_txt = [txt]
+            labels_vistos.add(label)
         elif bp and len(bp) >= 3 and not bp[0].isdigit() and _label_da_linha(bp) is None:
             # Título Bold-SC700 que não é rótulo de campo -> habilidade/ataque especial.
             flush()

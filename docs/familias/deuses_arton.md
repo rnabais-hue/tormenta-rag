@@ -1,6 +1,6 @@
 # Família estruturada: *Deuses de Arton* (4º livro de expansão)
 
-> **Status: EM CURSO.** `fonte="deuses-arton"` (registrado em [`fontes.py`](../../fontes.py)).
+> **Status: 100% COMPLETO (Caps. 1–4).** `fonte="deuses-arton"` (registrado em [`fontes.py`](../../fontes.py)).
 > Livro de 324 págs; layout = Heróis/núcleo (corpo IowanOldStyle, nomes Tormenta20, caixas
 > SourceSansPro). O núcleo já tem a família `deuses` (20 deuses) — o Deuses de Arton EXPANDE
 > tudo com registros próprios `fonte="deuses-arton"` que COEXISTEM (contrato multi-livro).
@@ -12,7 +12,7 @@
   Concedidos, Equipamentos Religiosos, Itens Litúrgicos, **Magias Divinas**. — MECÂNICO.
 - **Cap. 2: Distinções** (69–144): 23 distinções divinas (mesmo formato do Heróis). — **INTEGRADO**.
 - **Cap. 3: Deuses e Avatares** (145–252): 20 deuses maiores expandidos (4 págs cada) +
-  Deuses Menores + Antigos Deuses + Artefatos Divinos. — LORE + mecânica.
+  Deuses Menores + Antigos Deuses + Artefatos Divinos. — LORE + mecânica. — **INTEGRADO**.
 - **Cap. 4: Ameaças Divinas** (253–320): bestiário (Abissais, Aspectos, Celestiais, Fadas,
   Gênios, Gigantes) + Perigos Complexos + tabela por ND. — **INTEGRADO** (56 criaturas).
 
@@ -109,8 +109,43 @@ capturados + 2 cabeçalhos-splash de seção (Duende, Gênio da Terra) — todos
 Índice 3995→**4061**; `deuses-arton` 325→**391**. Recuperação rank-1 (Aucharai, Gigante do Fogo,
 Dríade, Aspecto de Khalmyr).
 
+### Deuses Maiores + Avatares — Cap. 3 (`capitulo="deuses-maiores"`, 41 chunks)
+
+`extrair_deuses_avatares.py` → `integrar_deuses_avatares.py`. **20 deuses maiores**, cada um:
+1 chunk de **overview** (lore: abertura + Motivações + Relações + Igreja e Clero) + 1 chunk de
+**Avatar** (stat block, `tipo="ameaca" subtipo="avatar"`) + 1 lista.
+
+**REUSO DE DOIS MOTORES:** a lore é prosa IowanOldStyle coletada por seção (27pt headers); o
+**Avatar** é um stat block versalete idêntico ao do bestiário → reusa `reconstruir_linhas` +
+`segmentar_criaturas` de `extrair_ameacas_deuses`. Achados: (1) o Avatar é achado pela ÂNCORA
+16pt "Avatar de X" (não pelo header 27pt "Avatar" — varrer a página do header faria os headers
+de seção 27pt virarem âncoras bogus e manchar o nome); (2) nome do avatar normalizado pelo nome
+próprio do TOC (versalete rebaixa a caixa: "Avatar de nimb"→"Avatar de Nimb"); (3) **Nimb** (Deus
+do Caos) grafa os headers com espaçamento decorativo → a lore dele fica num blob de abertura (sem
+split de seção), mas o Avatar é achado normalmente pela âncora 16pt.
+
+Índice 4200→**4241**; `deuses-arton` 530→**571**. Recuperação rank-1 (Avatar de Khalmyr, Avatar de
+Nimb, Oceano, Motivações de Sszzaas).
+
+### Deuses Menores + Antigos + Artefatos — Cap. 3 (`capitulo="deuses-menores"`, ~33 chunks) — FECHA o Cap. 3
+
+`extrair_deuses_menores.py` → `integrar_deuses_menores.py`. Coletor header-driven genérico (nome =
+cabeçalhos Tormenta20 de um dado tamanho; corpo = IowanOldStyle até o próximo). Blocos:
+- **5 Antigos Deuses** (240–246, nome 27pt): Glórienn, Keenn, Ragnar, Tauron, Tilliann.
+- **6 Artefatos Divinos** (248–251, nome 21pt): Armadura Risonha, Cálice dos Deuses, Holy Avenger,
+  Rhumnam, Toga do Reitor, Coroa da União Púrpura (nomes de 2 linhas mesclados).
+- **3 Deuses Menores nomeados** (233–235, nome **21pt** — não 27pt): Gwendolynn, Mauziell, Tibar
+  (ancorados por nome conhecido p/ não colidir com seções/subtítulos do mesmo tamanho).
+- **16 Dádivas** de deus menor (236–238, nome 16pt): as "habilidades" de um deus jogável.
+- 1 overview mecânico (naturezas/status/jogando) + 1 chunk de Desafios Divinos + lista.
+
+Índice 4241→**~4274**; `deuses-arton` 571→**~604**. **CAP. 3 do Deuses 100% COMPLETO.**
+
 ## Backlog (não integrado)
 
 - ~~**Cap. 2:** Distinções divinas~~ — **FEITO** (23 distinções, 115 poderes, ver acima).
-- **Cap. 3:** 20 deuses expandidos + menores/antigos + artefatos divinos (lore + mecânica).
+- ~~**Cap. 3:** deuses expandidos + menores/antigos + artefatos~~ — **FEITO** (20 maiores + avatares
+  + 5 antigos + 6 artefatos + 3 menores + 16 dádivas, ver acima).
 - ~~**Cap. 4:** bestiário divino~~ — **FEITO** (56 criaturas, ver acima).
+
+**DEUSES DE ARTON 100% COMPLETO** (Caps. 1–4).

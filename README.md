@@ -436,9 +436,9 @@ registrado em [`fontes.py`](fontes.py) (`nucleo`, `ameacas-arton`, `herois-arton
 livro:** todo `extrair_/integrar_` novo carimba a sua `fonte` + `pagina`; expansões
 que repetem/variam/estendem uma entidade do núcleo devem ser registros próprios com
 `fonte` distinta (e, quando fizer sentido, um campo de vínculo à entidade-base) — nunca
-sobrescrever silenciosamente o chunk do núcleo. Índice atual (4200 chunks): `nucleo` 1498 +
+sobrescrever silenciosamente o chunk do núcleo. Índice atual (4274 chunks): `nucleo` 1498 +
 `ameacas-arton` 377 + `herois-arton` 1727 (Cap 1: 664 + Arsenal: 205 + Arsenal Mágico: 241 + Arsenal Menor: 80 + Distinções: 230 + Regras Opcionais: 307) +
-`atlas-arton` 68 (Origens Regionais) + `deuses-arton` 530 (Cap 1 COMPLETO: classes 44 + resto 217 + menores 64; **Cap 2 distinções 139**; **Cap 4 bestiário 66**). **Os 5 livros estão no índice.**
+`atlas-arton` 68 (Origens Regionais) + `deuses-arton` 604 (**COMPLETO, Caps 1–4**: Cap 1 325 + Cap 2 distinções 139 + Cap 3 deuses/avatares 74 + Cap 4 bestiário 66). **Os 5 livros estão no índice.**
 
 **Expansão multi-livro — EM CURSO.**
 
@@ -495,8 +495,8 @@ História/Linha do Tempo, Vida em Arton (Cap. 5). Doc: [`docs/familias/atlas_art
 *Deuses de Arton* (`fonte="deuses-arton"`) — **INICIADO.** 4º livro de expansão (324 págs).
 **1º recorte — Classes Divinas** (`capitulo="classes-divinas"`, 44 chunks): **36 variantes de
 classe por deus** (21 Sacerdote + 6 Druida + 9 Paladino de X, cada uma com habilidades nomeadas)
-+ a **nova classe Frade**. **2º — resto do Cap 1** (`capitulo="cap1-resto"`, 217 chunks): 29 Magias Divinas + 75 Poderes Concedidos + 110 itens (75 Equipamentos Religiosos + 35 Itens Litúrgicos). **3º — menores do Cap 1** (`capitulo="cap1-menores"`, 64 chunks): 20 Autoridade Eclesiástica + 20 Outros Devotos (raças/classes por deus) + Linhagem Abençoada + 22 Heranças do Suraggel. **CAP. 1 COMPLETO** (325 chunks; índice 3670→3995). **4º — Bestiário Divino (Cap. 4)** (`capitulo="cap4-ameacas-divinas"`, 66 chunks): 56 criaturas (Abissais 10, Aspectos 6, Celestiais 12, Fadas 13, Gênios 7, Gigantes 10) + 10 listas; motor base-linha/versalete (`extrair_ameacas_deuses.py`; índice 3995→4061). **5º — Distinções Divinas (Cap. 2)** (`capitulo="distincoes"`, 139 chunks): 23 distinções (overview conceito+admissão+marca) + 115 poderes limpos + lista; PORTE do `extrair_distincoes_herois.py` (TOC aponta p/ a própria página de splash; cola-drop-cap só no conceito; índice 4061→4200).
-**Backlog:** 20 deuses expandidos (Cap. 3).
++ a **nova classe Frade**. **2º — resto do Cap 1** (`capitulo="cap1-resto"`, 217 chunks): 29 Magias Divinas + 75 Poderes Concedidos + 110 itens (75 Equipamentos Religiosos + 35 Itens Litúrgicos). **3º — menores do Cap 1** (`capitulo="cap1-menores"`, 64 chunks): 20 Autoridade Eclesiástica + 20 Outros Devotos (raças/classes por deus) + Linhagem Abençoada + 22 Heranças do Suraggel. **CAP. 1 COMPLETO** (325 chunks; índice 3670→3995). **4º — Bestiário Divino (Cap. 4)** (`capitulo="cap4-ameacas-divinas"`, 66 chunks): 56 criaturas (Abissais 10, Aspectos 6, Celestiais 12, Fadas 13, Gênios 7, Gigantes 10) + 10 listas; motor base-linha/versalete (`extrair_ameacas_deuses.py`; índice 3995→4061). **5º — Distinções Divinas (Cap. 2)** (`capitulo="distincoes"`, 139 chunks): 23 distinções (overview conceito+admissão+marca) + 115 poderes limpos + lista; PORTE do `extrair_distincoes_herois.py` (TOC aponta p/ a própria página de splash; cola-drop-cap só no conceito; índice 4061→4200). **6º — Deuses e Avatares (Cap. 3)** FECHA o livro (índice 4200→4274): 20 deuses maiores (`capitulo="deuses-maiores"`, 41): 1 overview de lore + 1 Avatar (stat block versalete, reusa motor do Cap. 4) cada; + Deuses Menores/Antigos/Artefatos (`capitulo="deuses-menores"`, 33): 5 Antigos Deuses + 6 Artefatos + 3 deuses menores nomeados + 16 Dádivas + overview. `extrair_deuses_avatares.py`/`extrair_deuses_menores.py`.
+**DEUSES DE ARTON 100% COMPLETO (Caps. 1–4).**
 Doc: [`docs/familias/deuses_arton.md`](docs/familias/deuses_arton.md).
 
 | Família | Nº | Filtro híbrido em `perguntar.py` |
@@ -524,6 +524,7 @@ Doc: [`docs/familias/deuses_arton.md`](docs/familias/deuses_arton.md).
 | Deuses de Arton — Cap. 1 (COMPLETO) | 325 chunks: 36 variantes de classe + Frade + 29 magias divinas + 75 poderes concedidos + 110 itens religiosos + 20 autoridade eclesiástica + 20 outros devotos + Abençoada + 22 heranças Suraggel | metadados `classe`/`deus`/`escola`/`categoria` filtráveis; busca vetorial — doc em `docs/familias/deuses_arton.md` |
 | Deuses de Arton — Bestiário Divino Cap. 4 (COMPLETO) | 66 chunks: 56 criaturas (Abissais 10 + Aspectos 6 + Celestiais 12 + Fadas 13 + Gênios 7 + Gigantes 10) + 6 listas-grupo + 4 listas-ND | metadados `nd`/`grupo`/`tipo_criatura`/`tamanho`; busca vetorial — doc em `docs/familias/deuses_arton.md` |
 | Deuses de Arton — Distinções Divinas Cap. 2 (COMPLETO) | 139 chunks: 23 distinções (overview) + 115 poderes + 1 lista | metadados `distincao`/`marca`/`tag`; busca vetorial — doc em `docs/familias/deuses_arton.md` |
+| Deuses de Arton — Deuses e Avatares Cap. 3 (COMPLETO) | 74 chunks: 20 deuses maiores (overview de lore + Avatar stat block) + 5 Antigos Deuses + 6 Artefatos Divinos + 3 deuses menores nomeados + 16 Dádivas + overviews | metadados `deus`/`tipo`(deus_expandido/deus_antigo/deus_menor/artefato/dadiva_divina); avatares `subtipo="avatar"`; busca vetorial — doc em `docs/familias/deuses_arton.md` |
 
 Índice atual: **~1498 chunks** (1165 brutos + estruturados − textos corridos
 substituídos). ⚠️ Cuidado com a **ordem de re-run** dos integradores (ver a nota nos

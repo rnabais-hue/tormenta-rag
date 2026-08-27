@@ -14,7 +14,7 @@
 - **Cap. 3: Deuses e Avatares** (145–252): 20 deuses maiores expandidos (4 págs cada) +
   Deuses Menores + Antigos Deuses + Artefatos Divinos. — LORE + mecânica.
 - **Cap. 4: Ameaças Divinas** (253–320): bestiário (Abissais, Aspectos, Celestiais, Fadas,
-  Gênios, Gigantes) + Perigos Complexos + tabela por ND.
+  Gênios, Gigantes) + Perigos Complexos + tabela por ND. — **INTEGRADO** (56 criaturas).
 
 ## Integrado
 
@@ -66,8 +66,33 @@ Furtividade/Hyninn, Cilício Vivo, Água Benta Concentrada).
 Índice 3931→**3995**; `deuses-arton` 261→**325**. **CAP. 1 do Deuses 100% COMPLETO.** Recuperação
 rank-1 (Devotos de Khalmyr, Linhagem Abençoada).
 
+### Bestiário Divino — Cap. 4 (`capitulo="cap4-ameacas-divinas"`, 66 chunks)
+
+`extrair_ameacas_deuses.py` → `integrar_ameacas_deuses.py`. **56 criaturas** (`tipo="ameaca"`)
+em 6 grupos: Abissais (10), Aspectos dos Deuses (6), Celestiais (12), Fadas (13), Gênios (7),
+Gigantes (10). Mais 6 chunks-lista por grupo + 4 chunks-lista por faixa de ND.
+
+**Por que NÃO foi um porte direto do Ameaças de Arton:** este livro usa o STAT BLOCK COMPACTO
+com rótulos em **VERSALETE** — a maiúscula sai a ~9pt e a continuação a ~6.3pt
+(SourceSansPro-Bold-SC700). Achatar spans (como no Ameaças) embaralha a continuação e perde
+espaços internos. O motor aqui é **BASE-LINHA e DIRIGIDO POR RÓTULOS** (descoberta reutilizável):
+1. Reconstrói cada LINHA concatenando spans em ordem-x (o versalete cola certo: "Iniciativa +10").
+2. Segmenta por âncora (Nome Tormenta20 16pt + ND + Tipo/Tamanho); **`COL_SPLIT=280`** — a coluna
+   direita começa em x≈289 e o ND da esquerda fica em x≈233 (mesma geometria das Distinções).
+3. Classifica cada linha pelo rótulo inicial (regex SEM `\b` no fim, pois o valor cola:
+   "Defesa26"); linhas sem rótulo = continuação. Habilidade = título Bold-SC700 que NÃO é rótulo.
+4. Formato compacto às vezes OMITE atributos e usa **"—" (em-dash) para stats de não-combatentes**
+   (ex.: Luminar): completude aceita ND+Def+PV OU (Iniciativa + Tipo + ≥2 habilidades) — o que
+   distingue ficha real de cabeçalho-splash.
+
+Resíduo (5 em `ameacas_deuses_pendentes.json`, fora do índice): 3 splash-duplicados de Aspectos já
+capturados + 2 cabeçalhos-splash de seção (Duende, Gênio da Terra) — todos corretamente excluídos.
+
+Índice 3995→**4061**; `deuses-arton` 325→**391**. Recuperação rank-1 (Aucharai, Gigante do Fogo,
+Dríade, Aspecto de Khalmyr).
+
 ## Backlog (não integrado)
 
 - **Cap. 2:** 22 Distinções divinas (reusa `extrair_distincoes_herois.py`, adaptado a este PDF).
 - **Cap. 3:** 20 deuses expandidos + menores/antigos + artefatos divinos (lore + mecânica).
-- **Cap. 4:** bestiário divino (~50 criaturas; reusa o padrão de Ameaças de Arton).
+- ~~**Cap. 4:** bestiário divino~~ — **FEITO** (56 criaturas, ver acima).

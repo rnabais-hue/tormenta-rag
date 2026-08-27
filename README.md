@@ -436,8 +436,9 @@ registrado em [`fontes.py`](fontes.py) (`nucleo`, `ameacas-arton`, `herois-arton
 livro:** todo `extrair_/integrar_` novo carimba a sua `fonte` + `pagina`; expansões
 que repetem/variam/estendem uma entidade do núcleo devem ser registros próprios com
 `fonte` distinta (e, quando fizer sentido, um campo de vínculo à entidade-base) — nunca
-sobrescrever silenciosamente o chunk do núcleo. Índice atual (3602 chunks): `nucleo` 1498 +
-`ameacas-arton` 377 + `herois-arton` 1727 (Cap 1: 664 + Arsenal: 205 + Arsenal Mágico: 241 + Arsenal Menor: 80 + Distinções: 230 + Regras Opcionais: 307).
+sobrescrever silenciosamente o chunk do núcleo. Índice atual (3670 chunks): `nucleo` 1498 +
+`ameacas-arton` 377 + `herois-arton` 1727 (Cap 1: 664 + Arsenal: 205 + Arsenal Mágico: 241 + Arsenal Menor: 80 + Distinções: 230 + Regras Opcionais: 307) +
+`atlas-arton` 68 (Origens Regionais).
 
 **Expansão multi-livro — EM CURSO.**
 
@@ -484,6 +485,13 @@ de tabela por geometria** (colunas por x + linhas por banda-y) — ambos contorn
 Exploração de Masmorras) e as **tabelas de custo de Domínios** (geometria com cluster de cabeçalho empilhado).
 **Cap. 4 COMPLETO, sem pendências.** Doc: [`docs/familias/herois_regras_opcionais.md`](docs/familias/herois_regras_opcionais.md).
 
+*Atlas de Arton* (`fonte="atlas-arton"`) — **INICIADO.** 3º livro de expansão (484 págs,
+majoritariamente lore/geografia). **1º recorte — Origens Regionais** (`capitulo="origens-regionais"`,
+68 chunks): **66 origens ligadas a reinos/regiões** (nome + região + Itens + Benefício + perícias),
+reusa a máquina das origens. `atlas-arton` estreia no índice (3602→3670). **Backlog (o grosso é
+lore):** regiões dos Caps. 1–3 (~58, expandem `mundo_arton` do núcleo), Organizações (Cap. 4),
+História/Linha do Tempo, Vida em Arton (Cap. 5). Doc: [`docs/familias/atlas_arton.md`](docs/familias/atlas_arton.md).
+
 | Família | Nº | Filtro híbrido em `perguntar.py` |
 |---|---|---|
 | Raças | 17 | modificador de atributo (`detectar_filtro`) |
@@ -505,6 +513,7 @@ Exploração de Masmorras) e as **tabelas de custo de Domínios** (geometria com
 | Regras Opcionais — Heróis Cap. 4 (COMPLETO) | 307 chunks (9 papéis + 54 complicações + 7 objetivos + 7 faixas + 19 mazelas + 18 regras de combate + 23 módulos de domínio + 80 construções + 18 módulos menores + 28 pratos + 20 ingredientes + 7 tabelas + listas) | — (metadados `categoria`/`classe`/`voto`/`modificadores`/`subtipo` filtráveis; busca vetorial) — doc em `docs/familias/herois_regras_opcionais.md` |
 | Arsenal — Heróis Cap. 3 (COMPLETO) | 526 chunks (Equipamentos 205 + Mágico: 22 magias/8 artefatos/202 itens mágicos = 241 + Menor: 12 melhorias/6 capangas/5 veículos/41 cômodos/25 mobílias = 80) | filtro de equipamento (`detectar_filtro_equipamento`, núcleo; follow-up: incluir Heróis) — doc em `docs/familias/herois_arsenal.md` |
 | Distinções — Heróis Cap. 2 (COMPLETO) | 230 chunks (36 distinções + 192 poderes + lista) | — (busca vetorial) — doc em `docs/familias/herois_distincoes.md` |
+| Origens Regionais — Atlas Apêndice | 66 (+overview +lista) | metadado `regiao` filtrável; busca vetorial — doc em `docs/familias/atlas_arton.md` |
 
 Índice atual: **~1498 chunks** (1165 brutos + estruturados − textos corridos
 substituídos). ⚠️ Cuidado com a **ordem de re-run** dos integradores (ver a nota nos

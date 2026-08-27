@@ -10,7 +10,7 @@
 - **Cap. 1: Campeões dos Deuses** (11–68): Classes Divinas (Sacerdote/Druida/Paladino de X),
   Autoridades Divinas, Nova Linhagem Abençoada, **Nova Classe: Frade**, Novos Poderes
   Concedidos, Equipamentos Religiosos, Itens Litúrgicos, **Magias Divinas**. — MECÂNICO.
-- **Cap. 2: Distinções** (69–144): 22 distinções divinas (mesmo formato do Heróis).
+- **Cap. 2: Distinções** (69–144): 23 distinções divinas (mesmo formato do Heróis). — **INTEGRADO**.
 - **Cap. 3: Deuses e Avatares** (145–252): 20 deuses maiores expandidos (4 págs cada) +
   Deuses Menores + Antigos Deuses + Artefatos Divinos. — LORE + mecânica.
 - **Cap. 4: Ameaças Divinas** (253–320): bestiário (Abissais, Aspectos, Celestiais, Fadas,
@@ -66,6 +66,24 @@ Furtividade/Hyninn, Cilício Vivo, Água Benta Concentrada).
 Índice 3931→**3995**; `deuses-arton` 261→**325**. **CAP. 1 do Deuses 100% COMPLETO.** Recuperação
 rank-1 (Devotos de Khalmyr, Linhagem Abençoada).
 
+### Distinções Divinas — Cap. 2 (`capitulo="distincoes"`, 139 chunks)
+
+`extrair_distincoes_deuses.py` → `integrar_distincoes_deuses.py`. **23 distinções** (entidade nova):
+1 overview cada (conceito + Admissão + Marca + lista de poderes) + **115 poderes** com efeito limpo
++ 1 lista geral. **0 poderes finos** (efeito < 40c) — nada foi para backlog.
+
+**PORTE do `extrair_distincoes_herois.py`** (mesma família de layout). Reusa: TOC como lista de nomes,
+máquina de estados conceito→Admissão→Marca→Poderes, `COL_X=280`, corpo IowanOldStyle, descarte de
+caixas SourceSansPro. **Diferença vs. Heróis:** aqui o TOC aponta para a PRÓPRIA página de splash (não
+a mecânica), então os pares (nome, página) do TOC dão os limites diretamente (cada distinção = da sua
+página até a anterior à próxima). Ajustes: `cola-drop-cap SÓ no conceito` (marca/poderes começam com
+corpo normal e podem iniciar com "A cada" — não colar lá); capitalização inicial de nome de poder
+(versalete às vezes vem minúsculo: "titereiro"→"Titereiro"). Exegeta do Akzath tem só 2 poderes
+(Círculo Externo/Interno) — correto, não é merge.
+
+Índice 4061→**4200**; `deuses-arton` 391→**530**. Recuperação rank-1 (Cavaleiro de Khalmyr, Numeromante,
+Sombra de Tenebra, poder "Sopro Compartilhado").
+
 ### Bestiário Divino — Cap. 4 (`capitulo="cap4-ameacas-divinas"`, 66 chunks)
 
 `extrair_ameacas_deuses.py` → `integrar_ameacas_deuses.py`. **56 criaturas** (`tipo="ameaca"`)
@@ -93,6 +111,6 @@ Dríade, Aspecto de Khalmyr).
 
 ## Backlog (não integrado)
 
-- **Cap. 2:** 22 Distinções divinas (reusa `extrair_distincoes_herois.py`, adaptado a este PDF).
+- ~~**Cap. 2:** Distinções divinas~~ — **FEITO** (23 distinções, 115 poderes, ver acima).
 - **Cap. 3:** 20 deuses expandidos + menores/antigos + artefatos divinos (lore + mecânica).
 - ~~**Cap. 4:** bestiário divino~~ — **FEITO** (56 criaturas, ver acima).

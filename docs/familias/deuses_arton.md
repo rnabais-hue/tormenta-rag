@@ -127,7 +127,7 @@ split de seção), mas o Avatar é achado normalmente pela âncora 16pt.
 Índice 4200→**4241**; `deuses-arton` 530→**571**. Recuperação rank-1 (Avatar de Khalmyr, Avatar de
 Nimb, Oceano, Motivações de Sszzaas).
 
-### Deuses Menores + Antigos + Artefatos — Cap. 3 (`capitulo="deuses-menores"`, ~33 chunks) — FECHA o Cap. 3
+### Deuses Menores + Antigos + Artefatos — Cap. 3 (`capitulo="deuses-menores"`, 33 chunks) — FECHA o Cap. 3
 
 `extrair_deuses_menores.py` → `integrar_deuses_menores.py`. Coletor header-driven genérico (nome =
 cabeçalhos Tormenta20 de um dado tamanho; corpo = IowanOldStyle até o próximo). Blocos:
@@ -139,7 +139,7 @@ cabeçalhos Tormenta20 de um dado tamanho; corpo = IowanOldStyle até o próximo
 - **16 Dádivas** de deus menor (236–238, nome 16pt): as "habilidades" de um deus jogável.
 - 1 overview mecânico (naturezas/status/jogando) + 1 chunk de Desafios Divinos + lista.
 
-Índice 4241→**~4274**; `deuses-arton` 571→**~604**. **CAP. 3 do Deuses 100% COMPLETO.**
+Índice 4241→**4274**; `deuses-arton` 571→**604**. **CAP. 3 do Deuses 100% COMPLETO.**
 
 ## Backlog (não integrado)
 

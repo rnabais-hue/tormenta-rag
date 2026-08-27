@@ -1,8 +1,18 @@
 # Família estruturada: *Atlas de Arton* (3º livro de expansão)
 
-> **Status: EM CURSO.** `fonte="atlas-arton"` (registrado em [`fontes.py`](../../fontes.py)).
-> Livro grande (484 págs), majoritariamente **lore/geografia** + um apêndice mecânico.
+> **Status: MECANICAMENTE COMPLETO — lore fora de escopo por decisão.** `fonte="atlas-arton"`
+> (registrado em [`fontes.py`](../../fontes.py)). Livro grande (484 págs), **quase 100% lore/
+> geografia**; a ÚNICA pegada mecânica é o apêndice de Origens Regionais — **já integrado**.
 > Layout = Heróis/núcleo (corpo IowanOldStyle, nomes Tormenta20, caixas SourceSansPro).
+>
+> **Decisão (2026-08-27):** focar só em crunch (itens/poderes/regras/stat blocks) e pular a
+> prosa. Uma varredura mecânica do livro inteiro (marcadores ND+Fort+Von, Pré-requisito, Custo,
+> Item, recebe +N, CD, teste de) achou **zero** stat blocks, **zero** itens, **zero** poderes
+> nas págs 46–471 — só as Origens Regionais (pg 472+). As menções esparsas a CD/Poder/teste no
+> corpo são referências narrativas, não entidades extraíveis. Logo, **não há mais conteúdo
+> mecânico a extrair**; a lore profunda (regiões/organizações/história) fica fora de escopo por
+> ser baixo ROI para RAG (artigos de 10–16 págs/região, sem âncora tipográfica, e o núcleo
+> `mundo_arton` já cobre o "o que é o reino X" em nível útil).
 
 ## Estrutura do livro (TOC nativo, 70 entradas)
 
@@ -39,13 +49,14 @@ distintas. Índice 3602→**3670**; `atlas-arton` estreia com 68 chunks. Recuper
 Forense de Salistick). Cosmético: kerning do PDF às vezes injeta espaço no meio de nomes
 próprios ("Duyshid akk", "Emissár io").
 
-## Backlog (não integrado) — o grosso do livro é LORE
+## Fora de escopo (LORE — decisão de não integrar)
 
-- **Regiões** (Caps. 1–3, ~58 regiões): cada região = candidata a 1+ chunk de overview
-  (geografia/regente/cultura/ganchos), expandindo a `mundo_arton` do núcleo. É o volume maior.
-- **Organizações** (Cap. 4): exércitos, igrejas/ordens, guildas.
-- **História / Linha do Tempo** (Introdução): lore cronológica.
-- **Vida em Arton** (Cap. 5): sociedade, viagens, comércio, lei.
+Todo o corpo do livro é lore e **não será estruturado** (baixo ROI para RAG, sem crunch):
+- **Regiões** (Caps. 1–3, ~58 regiões): artigos de 10–16 págs de prosa (geografia/regente/
+  cultura/ganchos). O núcleo `mundo_arton` (30 regiões, 1 overview cada) já responde o essencial.
+- **Organizações** (Cap. 4), **História/Linha do Tempo** (Introdução), **Vida em Arton** (Cap. 5).
 
-**Decisão de escopo pendente com o usuário:** como modelar as regiões (1 overview por região
-vs. sub-seções), dado o tamanho (ex.: Deheon = 16 págs).
+Se algum dia o objetivo mudar (ex.: um modo "enciclopédia de ambientação" em vez de assistente
+de regras), a fatia de maior valor seria um **passe raso**: 1 overview conciso por região tirado
+só do resumo de abertura (não das 16 págs), ~30–50 chunks p/ os Caps 1–2. Não recomendado para o
+uso atual (assistente de regras).

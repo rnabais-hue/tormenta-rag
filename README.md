@@ -485,12 +485,14 @@ de tabela por geometria** (colunas por x + linhas por banda-y) — ambos contorn
 Exploração de Masmorras) e as **tabelas de custo de Domínios** (geometria com cluster de cabeçalho empilhado).
 **Cap. 4 COMPLETO, sem pendências.** Doc: [`docs/familias/herois_regras_opcionais.md`](docs/familias/herois_regras_opcionais.md).
 
-*Atlas de Arton* (`fonte="atlas-arton"`) — **INICIADO.** 3º livro de expansão (484 págs,
-majoritariamente lore/geografia). **1º recorte — Origens Regionais** (`capitulo="origens-regionais"`,
-68 chunks): **66 origens ligadas a reinos/regiões** (nome + região + Itens + Benefício + perícias),
-reusa a máquina das origens. `atlas-arton` estreia no índice (3602→3670). **Backlog (o grosso é
-lore):** regiões dos Caps. 1–3 (~58, expandem `mundo_arton` do núcleo), Organizações (Cap. 4),
-História/Linha do Tempo, Vida em Arton (Cap. 5). Doc: [`docs/familias/atlas_arton.md`](docs/familias/atlas_arton.md).
+*Atlas de Arton* (`fonte="atlas-arton"`) — **MECANICAMENTE COMPLETO.** 3º livro de expansão (484 págs,
+quase 100% lore/geografia). **Origens Regionais** (`capitulo="origens-regionais"`, 68 chunks): **66
+origens ligadas a reinos/regiões** (nome + região + Itens + Benefício + perícias), reusa a máquina das
+origens. `atlas-arton` estreia no índice (3602→3670). **Decisão de escopo (2026-08-27):** uma varredura
+mecânica do livro inteiro achou **zero** stat blocks/itens/poderes fora do apêndice de Origens Regionais
+— logo NÃO há mais crunch a extrair. Toda a prosa (regiões dos Caps. 1–3, Organizações, História, Vida em
+Arton) fica **fora de escopo por decisão** (baixo ROI p/ RAG; o núcleo `mundo_arton` já cobre o essencial
+das regiões). Doc: [`docs/familias/atlas_arton.md`](docs/familias/atlas_arton.md).
 
 *Deuses de Arton* (`fonte="deuses-arton"`) — **INICIADO.** 4º livro de expansão (324 págs).
 **1º recorte — Classes Divinas** (`capitulo="classes-divinas"`, 44 chunks): **36 variantes de

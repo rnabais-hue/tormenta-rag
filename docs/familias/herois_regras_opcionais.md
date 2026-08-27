@@ -5,10 +5,9 @@
 > expansão, `fonte="herois-arton"`, `capitulo="regras-opcionais"`. Cap. 4 (págs 280–331) =
 > regras opcionais avulsas + o subsistema Domínios. Prioridade do usuário entre livros: **1 → 3 → 2 → 4**.
 
-O Cap. 4 é heterogêneo: parte é **procedural** (módulos de regra soltos, como no
-`regras_jogo` do núcleo), parte são **listas nomeadas entity-like**. Este recorte integrou
-as listas (limpas e de alto valor p/ o jogador); os módulos procedurais e o subsistema
-Domínios ficam no BACKLOG (ver fim).
+O Cap. 4 é heterogêneo: parte é **procedural** (módulos de regra soltos, como no `regras_jogo`
+do núcleo), parte são **listas nomeadas entity-like**. **Tudo integrado** (listas + Combate
+Avançado + Domínios + módulos menores + todas as tabelas) — capítulo COMPLETO (ver §3).
 
 ## 0. Particularidades de layout (reusadas + novas)
 

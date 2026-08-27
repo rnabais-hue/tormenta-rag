@@ -113,7 +113,7 @@ python integrar_herois_cap1.py
 ## 6. Cap 1 — 100% COMPLETO
 
 As 6 famílias (raças, poderes, Treinador, origens, variantes, tabelas) estão extraídas, validadas
-e integradas ao FAISS. **Cap 3 (Arsenal)**, **Cap 2 (Distinções)** e **Cap 4 (Regras Opcionais)** já têm
-recorte seguro integrado (ver docs próprias). Pendências: fechar Arsenal (Superiores/Capangas/Veículos/
-Magias/Itens Mágicos/Artefatos/Bases), os 18 poderes finos de Distinções, e os módulos procedurais +
-Domínios do Cap 4 — ver [`herois_regras_opcionais.md`](herois_regras_opcionais.md).
+e integradas ao FAISS. **HERÓIS DE ARTON 100% COMPLETO:** Cap 1 (aqui), Cap 2 (Distinções, 230 chunks),
+Cap 3 (Arsenal completo = Equipamentos + Mágico + Menor, 526 chunks) e Cap 4 (Regras Opcionais, 307 chunks)
+— ver docs próprias. Único follow-up técnico pendente: incluir o equipamento de Heróis em
+`detectar_filtro_equipamento()` de `perguntar.py`.

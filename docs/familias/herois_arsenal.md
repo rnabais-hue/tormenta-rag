@@ -19,7 +19,10 @@ cada uma com idempotência estreita própria (por `capitulo`).
   remove só chunks com `capitulo=="arsenal"` (NÃO toca no Cap 1 `herois-arton` nem no núcleo).
   Recomputa `meta["fontes"]` do zero. Reconstrói apenas os vetores novos.
 
-## Integrado (recorte seguro — 205 chunks; `herois-arton` 664→869; índice 2539→2744)
+## 1ª rodada — Novos Equipamentos (`capitulo="arsenal"`, 205 chunks)
+
+> Histórico desta rodada. O chunk `Pendência` abaixo listava o que faltava na época; hoje o
+> Arsenal está COMPLETO (ver as rodadas 2 e 3 adiante). Índice na época: 2539→2744.
 
 | Sub-parte | Registros | Tabela | Obs. |
 |---|---|---|---|

@@ -1,7 +1,7 @@
 {
   "modelo_embed": "BAAI/bge-m3",
   "dim": 1024,
-  "n_chunks": 3670,
+  "n_chunks": 3714,
   "n_secoes": 288,
   "pdf": "Tormenta20-Edicao-Jogo-do-Ano-12-06-2024.pdf",
   "max_chars": 2000,
@@ -18,7 +18,7 @@
   "equipamentos_estruturados": 239,
   "magias_estruturadas": 198,
   "condicoes_estruturadas": 35,
-  "ultima_atualizacao": "2026-08-26T22:26:38",
+  "ultima_atualizacao": "2026-08-27T06:19:04",
   "ameacas_estruturadas": 80,
   "regras_jogo_estruturadas": 48,
   "mundo_arton_estruturado": 34,
@@ -28,7 +28,8 @@
     "nucleo": 1498,
     "ameacas-arton": 377,
     "herois-arton": 1727,
-    "atlas-arton": 68
+    "atlas-arton": 68,
+    "deuses-arton": 44
   },
   "ameacas_arton_estruturadas": 344,
   "herois_cap1_estruturado": {
@@ -106,5 +107,15 @@
     "origens": 66,
     "regioes": 41,
     "total_chunks": 68
+  },
+  "deuses_classes_divinas_estruturado": {
+    "variantes": 36,
+    "por_classe": {
+      "Sacerdote": 21,
+      "Druida": 6,
+      "Paladino": 9
+    },
+    "frade_habilidades": 6,
+    "total_chunks": 44
   }
 }

@@ -53,10 +53,21 @@ Khalmyr, Paladino de Valkaria, Frade visão-geral, Frade: Solo Santificado).
 Índice 3714→**3931**; `deuses-arton` 44→**261**. Recuperação rank-1 (Couraça de Allihanna, Dom da
 Furtividade/Hyninn, Cilício Vivo, Água Benta Concentrada).
 
+### Menores do Cap. 1 (`capitulo="cap1-menores"`, 64 chunks) — FECHA o Cap. 1
+
+`extrair_devotos_menores_deuses.py` → `integrar_cap1_menores_deuses.py`. Quatro blocos pequenos:
+- **20 Autoridade Eclesiástica** (24–25, `autoridade_eclesiastica`): por deus, o título/benefício de
+  liderança do clero (rótulo negrito = deus + texto).
+- **20 Outros Devotos** (36–37, `devotos_permitidos`): por deus, quais raças/classes podem cultuá-lo.
+- **Linhagem Abençoada** (35, `linhagem`): 3 habilidades (Básica/Aprimorada/Superior) — **rótulos
+  ITÁLICOS com bullet** ("• Básica."), diferente do Suraggel (negrito).
+- **22 Heranças do Suraggel** (38–39, `heranca_suraggel`): "• Herança de X." (negrito) + efeito.
+
+Índice 3931→**3995**; `deuses-arton` 261→**325**. **CAP. 1 do Deuses 100% COMPLETO.** Recuperação
+rank-1 (Devotos de Khalmyr, Linhagem Abençoada).
+
 ## Backlog (não integrado)
 
-- **Resto do Cap. 1 (menores):** Autoridades Divinas, Nova Linhagem Abençoada, Outros Devotos,
-  Suraggel Variantes.
 - **Cap. 2:** 22 Distinções divinas (reusa `extrair_distincoes_herois.py`, adaptado a este PDF).
 - **Cap. 3:** 20 deuses expandidos + menores/antigos + artefatos divinos (lore + mecânica).
 - **Cap. 4:** bestiário divino (~50 criaturas; reusa o padrão de Ameaças de Arton).

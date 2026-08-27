@@ -436,9 +436,9 @@ registrado em [`fontes.py`](fontes.py) (`nucleo`, `ameacas-arton`, `herois-arton
 livro:** todo `extrair_/integrar_` novo carimba a sua `fonte` + `pagina`; expansões
 que repetem/variam/estendem uma entidade do núcleo devem ser registros próprios com
 `fonte` distinta (e, quando fizer sentido, um campo de vínculo à entidade-base) — nunca
-sobrescrever silenciosamente o chunk do núcleo. Índice atual (3714 chunks): `nucleo` 1498 +
+sobrescrever silenciosamente o chunk do núcleo. Índice atual (3931 chunks): `nucleo` 1498 +
 `ameacas-arton` 377 + `herois-arton` 1727 (Cap 1: 664 + Arsenal: 205 + Arsenal Mágico: 241 + Arsenal Menor: 80 + Distinções: 230 + Regras Opcionais: 307) +
-`atlas-arton` 68 (Origens Regionais) + `deuses-arton` 44 (Classes Divinas). **Os 5 livros estão no índice.**
+`atlas-arton` 68 (Origens Regionais) + `deuses-arton` 261 (Classes Divinas 44 + resto do Cap 1: 217). **Os 5 livros estão no índice.**
 
 **Expansão multi-livro — EM CURSO.**
 
@@ -495,9 +495,9 @@ História/Linha do Tempo, Vida em Arton (Cap. 5). Doc: [`docs/familias/atlas_art
 *Deuses de Arton* (`fonte="deuses-arton"`) — **INICIADO.** 4º livro de expansão (324 págs).
 **1º recorte — Classes Divinas** (`capitulo="classes-divinas"`, 44 chunks): **36 variantes de
 classe por deus** (21 Sacerdote + 6 Druida + 9 Paladino de X, cada uma com habilidades nomeadas)
-+ a **nova classe Frade** (características + 6 habilidades). `deuses-arton` estreia (3670→3714).
-**Backlog:** resto do Cap. 1 (Poderes Concedidos, Equipamentos/Itens Litúrgicos, Magias Divinas),
-22 Distinções divinas (Cap. 2), 20 deuses expandidos (Cap. 3), bestiário divino (Cap. 4).
++ a **nova classe Frade**. **2º recorte — resto do Cap 1** (`capitulo="cap1-resto"`, 217 chunks): 29 Magias Divinas + 75 Poderes Concedidos + 110 itens (75 Equipamentos Religiosos + 35 Itens Litúrgicos). `deuses-arton` 44→261 (índice 3670→3931).
+**Backlog:** menores do Cap. 1 (Autoridades Divinas, Abençoada, Outros Devotos, Suraggel), 22
+Distinções divinas (Cap. 2), 20 deuses expandidos (Cap. 3), bestiário divino (Cap. 4).
 Doc: [`docs/familias/deuses_arton.md`](docs/familias/deuses_arton.md).
 
 | Família | Nº | Filtro híbrido em `perguntar.py` |
@@ -522,7 +522,7 @@ Doc: [`docs/familias/deuses_arton.md`](docs/familias/deuses_arton.md).
 | Arsenal — Heróis Cap. 3 (COMPLETO) | 526 chunks (Equipamentos 205 + Mágico: 22 magias/8 artefatos/202 itens mágicos = 241 + Menor: 12 melhorias/6 capangas/5 veículos/41 cômodos/25 mobílias = 80) | filtro de equipamento (`detectar_filtro_equipamento`, núcleo; follow-up: incluir Heróis) — doc em `docs/familias/herois_arsenal.md` |
 | Distinções — Heróis Cap. 2 (COMPLETO) | 230 chunks (36 distinções + 192 poderes + lista) | — (busca vetorial) — doc em `docs/familias/herois_distincoes.md` |
 | Origens Regionais — Atlas Apêndice | 66 (+overview +lista) | metadado `regiao` filtrável; busca vetorial — doc em `docs/familias/atlas_arton.md` |
-| Classes Divinas — Deuses Cap. 1 | 36 variantes (Sacerdote/Druida/Paladino de X) + classe Frade | metadados `classe`/`deus` filtráveis; busca vetorial — doc em `docs/familias/deuses_arton.md` |
+| Deuses de Arton — Cap. 1 | 36 variantes de classe + Frade + 29 magias divinas + 75 poderes concedidos + 110 itens religiosos (261 chunks) | metadados `classe`/`deus`/`escola`/`categoria` filtráveis; busca vetorial — doc em `docs/familias/deuses_arton.md` |
 
 Índice atual: **~1498 chunks** (1165 brutos + estruturados − textos corridos
 substituídos). ⚠️ Cuidado com a **ordem de re-run** dos integradores (ver a nota nos

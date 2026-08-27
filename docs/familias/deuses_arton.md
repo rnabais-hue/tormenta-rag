@@ -34,14 +34,29 @@
   Versiculário, Poder de Frade, Dádiva da Fé, Solo Santificado).
 
 Índice 3670→**3714**; `deuses-arton` estreia com 44 chunks. Recuperação rank-1 (Sacerdote de
-Khalmyr, Paladino de Valkaria, Frade visão-geral, Frade: Solo Santificado). Cosmético: o kerning
-do PDF às vezes injeta espaço em nomes ("Duyshid akk").
+Khalmyr, Paladino de Valkaria, Frade visão-geral, Frade: Solo Santificado).
+
+### Resto do Cap. 1 (`capitulo="cap1-resto"`, 217 chunks)
+
+`extrair_magias_deuses.py` + `extrair_poderes_concedidos_deuses.py` +
+`extrair_itens_religiosos_deuses.py` → `integrar_cap1_resto_deuses.py`.
+
+- **29 Magias Divinas** (62–68, `tipo="magia"`): reusa o schema/stat-block do núcleo (extrair_magias);
+  26 divina + 3 universal, com aprimoramentos.
+- **75 Novos Poderes Concedidos** (44–49, `tipo="poder"` `categoria="concedido"`): nome 16pt + tag
+  **deus** 11pt (multi-deus dividido por vírgula) + efeito; os 20 deuses maiores cobertos.
+- **110 itens** (50–61): **75 Equipamentos Religiosos** (`equipamento_religioso`, rótulo bold por
+  subcategoria) + **35 Itens Litúrgicos** (`item_liturgico`, nome 16pt). Troca de modo litúrgico por
+  página (≥57); SUBCATS accent-free. *(As subcategorias dos equipamentos ficam imperfeitas — os itens
+  são completos (nome+descrição), só o metadado `categoria` às vezes agrupa errado.)*
+
+Índice 3714→**3931**; `deuses-arton` 44→**261**. Recuperação rank-1 (Couraça de Allihanna, Dom da
+Furtividade/Hyninn, Cilício Vivo, Água Benta Concentrada).
 
 ## Backlog (não integrado)
 
-- **Resto do Cap. 1:** Autoridades Divinas, Nova Linhagem Abençoada, Outros Devotos, Suraggel
-  Variantes, **Novos Poderes Concedidos**, Equipamentos Religiosos, Itens Litúrgicos, **Magias
-  Divinas** (reusa o extrator de magias).
+- **Resto do Cap. 1 (menores):** Autoridades Divinas, Nova Linhagem Abençoada, Outros Devotos,
+  Suraggel Variantes.
 - **Cap. 2:** 22 Distinções divinas (reusa `extrair_distincoes_herois.py`, adaptado a este PDF).
 - **Cap. 3:** 20 deuses expandidos + menores/antigos + artefatos divinos (lore + mecânica).
 - **Cap. 4:** bestiário divino (~50 criaturas; reusa o padrão de Ameaças de Arton).

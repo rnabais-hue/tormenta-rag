@@ -436,16 +436,19 @@ registrado em [`fontes.py`](fontes.py) (`nucleo`, `ameacas-arton`, `herois-arton
 livro:** todo `extrair_/integrar_` novo carimba a sua `fonte` + `pagina`; expansões
 que repetem/variam/estendem uma entidade do núcleo devem ser registros próprios com
 `fonte` distinta (e, quando fizer sentido, um campo de vínculo à entidade-base) — nunca
-sobrescrever silenciosamente o chunk do núcleo. Índice atual (4274 chunks): `nucleo` 1498 +
-`ameacas-arton` 377 + `herois-arton` 1727 (Cap 1: 664 + Arsenal: 205 + Arsenal Mágico: 241 + Arsenal Menor: 80 + Distinções: 230 + Regras Opcionais: 307) +
+sobrescrever silenciosamente o chunk do núcleo. Índice atual (4302 chunks): `nucleo` 1498 +
+`ameacas-arton` 405 (bestiário 377 + **27 raças jogáveis + lista**) + `herois-arton` 1727 (Cap 1: 664 + Arsenal: 205 + Arsenal Mágico: 241 + Arsenal Menor: 80 + Distinções: 230 + Regras Opcionais: 307) +
 `atlas-arton` 68 (Origens Regionais) + `deuses-arton` 604 (**COMPLETO, Caps 1–4**: Cap 1 325 + Cap 2 distinções 139 + Cap 3 deuses/avatares 74 + Cap 4 bestiário 66). **Os 5 livros estão no índice.**
 
 **Expansão multi-livro — EM CURSO.**
 
-*Ameaças de Arton* (`fonte="ameacas-arton"`) — **BESTIÁRIO FEITO.** 344 criaturas completas
-(+55 pendentes isoladas) por auto-descoberta **geométrica** (layout adversarial). Conserto de
-raiz do parser (descartar título-splash decorativo) recuperou ~20 criaturas antes fundidas e
-limpou os nomes na origem. 377 chunks. Doc: [`docs/familias/ameacas_arton.md`](docs/familias/ameacas_arton.md).
+*Ameaças de Arton* (`fonte="ameacas-arton"`) — **BESTIÁRIO + RAÇAS JOGÁVEIS FEITOS.** 344 criaturas
+completas (+55 pendentes isoladas) por auto-descoberta **geométrica** (layout adversarial). Conserto de
+raiz do parser (descartar título-splash decorativo) recuperou ~20 criaturas antes fundidas e limpou os
+nomes na origem. 377 chunks. **+ 27 raças jogáveis** (`capitulo="racas"`, +28): o Apêndice A (Tabela A-1
+= índice: nome+modificadores+página) + as caixas "{Nome}: Habilidades de Raça" (detecção via
+`get_drawings()` com fallback; header 2-linhas/"Raça Variante:"; rótulo IowanOldStyle-Black). Índice
+4274→4302. Doc: [`docs/familias/ameacas_arton.md`](docs/familias/ameacas_arton.md).
 
 *Heróis de Arton* (`fonte="herois-arton"`) — **Cap. 1 COMPLETO** (6 famílias). 5 Novas Raças, 443
 Novos Poderes (classe + gerais), classe Treinador (+pet), 14 Classes Variantes, 30 Novas Origens,
@@ -527,6 +530,7 @@ Doc: [`docs/familias/deuses_arton.md`](docs/familias/deuses_arton.md).
 | Deuses de Arton — Bestiário Divino Cap. 4 (COMPLETO) | 66 chunks: 56 criaturas (Abissais 10 + Aspectos 6 + Celestiais 12 + Fadas 13 + Gênios 7 + Gigantes 10) + 6 listas-grupo + 4 listas-ND | metadados `nd`/`grupo`/`tipo_criatura`/`tamanho`; busca vetorial — doc em `docs/familias/deuses_arton.md` |
 | Deuses de Arton — Distinções Divinas Cap. 2 (COMPLETO) | 139 chunks: 23 distinções (overview) + 115 poderes + 1 lista | metadados `distincao`/`marca`/`tag`; busca vetorial — doc em `docs/familias/deuses_arton.md` |
 | Deuses de Arton — Deuses e Avatares Cap. 3 (COMPLETO) | 74 chunks: 20 deuses maiores (overview de lore + Avatar stat block) + 5 Antigos Deuses + 6 Artefatos Divinos + 3 deuses menores nomeados + 16 Dádivas + overviews | metadados `deus`/`tipo`(deus_expandido/deus_antigo/deus_menor/artefato/dadiva_divina); avatares `subtipo="avatar"`; busca vetorial — doc em `docs/familias/deuses_arton.md` |
+| Ameaças de Arton — Raças Jogáveis Apêndice A (COMPLETO) | 28 chunks: 27 raças jogáveis (modificadores de atributo + habilidades raciais) + 1 lista | `tipo="raca"`, `capitulo="racas"`; busca vetorial — doc em `docs/familias/ameacas_arton.md` |
 
 Índice atual: **~1498 chunks** (1165 brutos + estruturados − textos corridos
 substituídos). ⚠️ Cuidado com a **ordem de re-run** dos integradores (ver a nota nos

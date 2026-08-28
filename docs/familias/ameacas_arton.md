@@ -1,8 +1,8 @@
 # Família estruturada: Bestiário de *Ameaças de Arton* (livro de expansão)
 
-> **Status: FASE 1 INTEGRADA (344 criaturas completas no FAISS, 55 pendentes isoladas).** Livro de expansão, `fonte="ameacas-arton"`.
-> Escopo desta família: **as CRIATURAS** do bestiário (Cap. 1). As raças variantes
-> (espalhadas em caixas soltas) ficam **fora** por decisão de projeto.
+> **Status: CRIATURAS + RAÇAS JOGÁVEIS INTEGRADAS.** Livro de expansão, `fonte="ameacas-arton"`.
+> Escopo: **as CRIATURAS** do bestiário (Cap. 1, 344 no FAISS + 55 pendentes) **e as 27 RAÇAS
+> JOGÁVEIS** (Apêndice A + caixas "Habilidades de Raça"), integradas em `capitulo="racas"`.
 
 Primeira família do esforço **multi-livro**. Difere das do núcleo em dois pontos:
 1. Vem de um livro que **não passou pela `ingestao.py`** → a integração é **aditiva**
@@ -150,3 +150,32 @@ Não precisa de filtro novo: as criaturas usam `tipo="ameaca"`, então o
 `detectar_filtro_ameaca` existente (ND/faixa/grupo) já as cobre. A procedência (`fonte`)
 distingue do bestiário do núcleo e aparece na citação ("segundo *Ameaças de Arton*, pág. X").
 Follow-up opcional: `detectar_filtro_fonte` para escopar por livro.
+
+---
+
+## 8. Raças Jogáveis (Apêndice A) — `capitulo="racas"`, 28 chunks
+
+`extrair_racas_ameacas.py` → `integrar_racas_ameacas.py`. **27 raças jogáveis** (`tipo="raca"`,
+`subtipo="ameacas"`) — as ameaças do bestiário que podem ser usadas como personagem — + 1 lista.
+Eram "o pior caso de extração" (caixas soltas espalhadas no bestiário), agora resolvido.
+
+**Chave da extração:** o **Apêndice A (pg 418)** traz a **Tabela A-1: Raças para Personagens**
+(nome + modificadores de atributo + página), que serve de índice autoritativo. Cada raça tem, na
+sua página, uma **caixa "{Nome}: Habilidades de Raça"** com: linha de modificadores por extenso +
+habilidades raciais no padrão rótulo-bold ("Nome. descrição" em IowanOldStyle-Black) — o MESMO
+formato das raças do núcleo (`Longevidade.`/`Devotos.` fecham a caixa).
+
+**Motor** (`extrair_racas_ameacas.py`): acha os headers "Habilidades de Raça" (SourceSansPro-Bold
+~13pt ou Mansalva ~20pt, NÃO Tormenta20; filtro por tamanho exclui as menções 9.5pt no corpo),
+delimita a caixa via `get_drawings()` (com **fallback sintético** quando não há retângulo, ex.:
+Kobolds), ordena o texto em 2 colunas e parseia modificadores + habilidades. **Descobertas:**
+(1) header pode vir em 2 linhas ("Tengu: Habilidades" + "de Raça") → junta a linha seguinte;
+(2) variantes usam "**Raça Variante: X**" (Trog Anão, Soterrado — referenciam uma base como
+osteon/golem); (3) o negrito do rótulo é IowanOldStyle-**Black**, não *-Bold; (4) nome limpo pelas
+1–3 palavras capitalizadas, com dedup ("Trog Anão Trog"→"Trog Anão"); entradas sem habilidade são
+descartadas (ruído). Golem (construct "mais especial") e Moreau (3 sub-caixas macho/fêmea a 9.5pt)
+ficam de fora — casos irregulares de baixo valor marginal.
+
+Raças: Meio-Orc, Orc, Tabrachi, Trog Anão, Ogro, Bugbear, Hobgoblin, Centauro, Gnoll, Kallyanach,
+Kaijin, Kappa, Mashin, Nezumi, Tengu, Minauro, Kobolds, Harpia, Ceratops, Pteros, Velocis, Voracis,
+Yidishan, Elfo-do-Mar, Nagah, Finntroll, Soterrado. Recuperação rank-1 validada.
